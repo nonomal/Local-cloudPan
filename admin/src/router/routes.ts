@@ -1,0 +1,102 @@
+import { RouteRecordRaw } from 'vue-router';
+import Layout from '@/layouts/index.vue';
+
+// 常量路由
+export const constantRoute: RouteRecordRaw[] = [
+  {
+    //登录
+    path: '/login',
+    component: () => import('@/pages/login/index.vue'),
+    name: 'login',
+  },
+  {
+    //登录成功以后展示数据的路由
+    path: '/',
+    component: Layout,
+    name: 'layout',
+    redirect: '/home',
+    children: [
+      {
+        path: '/home',
+        component: () => import('@/pages/home/index.vue'),
+      },
+    ],
+  },
+  {
+    path: '/sharePan',
+    component: Layout,
+    redirect: '/sharePan/base?path=',
+    name: 'sharePan',
+    meta: { title: '云盘' },
+    children: [
+      {
+        path: 'base',
+        name: 'sharePanBase',
+        component: () => import('@/pages/sharePan/base/index.vue'),
+        meta: { title: '公共文件' },
+      },
+    ],
+  },
+  {
+    //404
+    path: '/404',
+    component: () => import('@/pages/404/index.vue'),
+    name: '404',
+  },
+];
+
+// 异步路由
+// export const asyncRoute: RouteRecordRaw[] = [
+//   {
+//     path: '/acl',
+//     component: () => import('@/layout/index.vue'),
+//     name: 'Acl',
+//     meta: {
+//       title: '权限管理',
+//       icon: 'Lock',
+//     },
+//     redirect: '/acl/user',
+//     children: [
+//       {
+//         path: '/acl/user',
+//         component: () => import('@/views/acl/user/index.vue'),
+//         name: 'User',
+//         meta: {
+//           title: '用户管理',
+//           icon: 'User',
+//         },
+//       },
+//       {
+//         path: '/acl/role',
+//         component: () => import('@/views/acl/role/index.vue'),
+//         name: 'Role',
+//         meta: {
+//           title: '角色管理',
+//           icon: 'UserFilled',
+//         },
+//       },
+//       {
+//         path: '/acl/permission',
+//         component: () => import('@/views/acl/permission/index.vue'),
+//         name: 'Permission',
+//         meta: {
+//           title: '菜单管理',
+//           icon: 'Monitor',
+//         },
+//       },
+//     ],
+//   },
+// ];
+
+//任意路由
+export const anyRoute = {
+  //任意路由
+  path: '/:pathMatch(.*)*',
+  redirect: '/404',
+  name: 'Any',
+  meta: {
+    title: '任意路由',
+    hidden: true,
+    icon: 'DataLine',
+  },
+};
