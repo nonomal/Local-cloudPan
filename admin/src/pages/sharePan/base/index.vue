@@ -1,44 +1,67 @@
 <template>
-  <div class="tabbar-container">
-    <Tabbar @switch-mode="handleSwitch"></Tabbar>
-  </div>
+  <div>
+    <!-- 上传 -->
+    <el-upload
+      ref="uploadRef"
+      class="upload-container"
+      action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+      multiple
+    >
+      <ElDropdown>
+        <el-button type="primary" round icon="upload" style="width: 80px">上传</el-button>
 
-  <ContextMenu :menu="mainMenu" @select="handleSelect">
-    <el-card class="pan-card">
-      <!-- 列表视图 -->
-      <el-table
-        :data="fileList"
-        @cell-click="handleClick"
-        @row-contextmenu="menuShow == true"
-        v-if="curMode === 0"
-        style="
-          max-height: calc(100vh - var(--ep-menu-horizontal-height) - 112px);
-          overflow: hidden auto;
-        "
-      >
-        <el-table-column prop="name" label="文件名" min-width="100">
-          <template #default="{ row }">
-            <img :src="row.iconSrc" alt="" width="25px" height="25px" class="file-pic" />
-            {{ row.name }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="size" label="大小" min-width="30"></el-table-column>
-        <el-table-column prop="modified" label="修改时间" min-width="70"></el-table-column>
-      </el-table>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item>上传文件</el-dropdown-item>
+            <el-dropdown-item>上传文件夹</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </ElDropdown>
+    </el-upload>
 
-      <!-- 网格视图 -->
-      <ContextMenu :menu="fileMenu" showarea=".grid-view .file-item" @select="handleSelect">
-        <div class="grid-view" v-if="curMode === 1">
-          <div class="file-item" v-for="file in fileList" :key="file.id">
-            <FileItem :file="file" @file-click="handleClick" @file-choosed="handleChoose" />
-          </div>
+    <ContextMenu :menu="mainMenu" @select="handleSelect">
+      <el-card class="pan-card">
+        <!-- tabbar -->
+        <div class="tabbar-container">
+          <Tabbar @switch-mode="handleSwitch"></Tabbar>
         </div>
-      </ContextMenu>
-    </el-card>
-  </ContextMenu>
-  <!-- 下载 -->
-  <div class="download-container">
-    <a ref="downloadRef" :href="fileHref"></a>
+
+        <!-- 列表视图 -->
+        <el-table
+          :data="fileList"
+          @cell-click="handleClick"
+          @row-contextmenu="menuShow == true"
+          v-if="curMode === 0"
+          style="
+            max-height: calc(100vh - var(--ep-menu-horizontal-height) - 112px);
+            overflow: hidden auto;
+          "
+        >
+          <el-table-column type="selection" width="55" />
+          <el-table-column prop="name" label="文件名" min-width="100">
+            <template #default="{ row }">
+              <img :src="row.iconSrc" alt="" width="25px" height="25px" class="file-pic" />
+              {{ row.name }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="size" label="大小" min-width="30"></el-table-column>
+          <el-table-column prop="modified" label="修改时间" min-width="70"></el-table-column>
+        </el-table>
+
+        <!-- 网格视图 -->
+        <ContextMenu :menu="fileMenu" showarea=".grid-view .file-item" @select="handleSelect">
+          <div class="grid-view" v-if="curMode === 1">
+            <div class="file-item" v-for="file in fileList" :key="file.id">
+              <FileItem :file="file" @file-click="handleClick" @file-choosed="handleChoose" />
+            </div>
+          </div>
+        </ContextMenu>
+      </el-card>
+    </ContextMenu>
+    <!-- 下载 -->
+    <div class="download-container">
+      <a ref="downloadRef" :href="fileHref"></a>
+    </div>
   </div>
 </template>
 
@@ -223,5 +246,8 @@
   .download-container {
     position: absolute;
     left: -9999px;
+  }
+  .upload-container {
+    text-align: left;
   }
 </style>

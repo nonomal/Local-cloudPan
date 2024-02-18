@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-  import { toggleDark } from '@/composables/dark';
+  import { toggleDark, isDark } from '@/composables/dark';
   import { ref } from 'vue';
   import { User, SwitchButton, Setting } from '@element-plus/icons-vue';
 
@@ -24,12 +24,12 @@
         退出登录
       </el-menu-item>
     </el-sub-menu>
-    <el-menu-item h="full" @click="toggleDark()">
-      <button
-        class="border-none w-full bg-transparent cursor-pointer"
-        style="height: var(--ep-menu-item-height)"
-      >
-        <i inline-flex i="dark:ep-moon ep-sunny" />
+    <el-menu-item @click="toggleDark()">
+      <button class="toggle-btn" style="height: var(--ep-menu-item-height)">
+        <el-icon size="1rem">
+          <Sunny v-if="!isDark" />
+          <Moon v-else />
+        </el-icon>
       </button>
     </el-menu-item>
     <el-menu-item index="3">
@@ -41,5 +41,11 @@
 <style scoped>
   .flex-grow {
     flex-grow: 1;
+  }
+  .toggle-btn {
+    width: 100%;
+    border-style: none;
+    background-color: transparent;
+    cursor: pointer;
   }
 </style>

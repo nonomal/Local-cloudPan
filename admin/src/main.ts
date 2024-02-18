@@ -2,7 +2,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from '@/router/index';
 
-// import "~/styles/element/index.scss";
+// import '@/styles/element/index.scss';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 
 import '@/styles/index.scss';

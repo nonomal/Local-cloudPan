@@ -19,6 +19,7 @@
         </el-breadcrumb-item>
       </el-breadcrumb>
     </div>
+    <!-- 模式切换 -->
     <div class="rig-switchMode">
       <el-dropdown trigger="click" @command="handleClick">
         <span class="el-dropdown-link">

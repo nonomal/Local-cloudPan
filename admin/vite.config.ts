@@ -8,15 +8,6 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 
 import { viteMockServe } from 'vite-plugin-mock';
 
-// import Unocss from 'unocss/vite';
-// import {
-//   presetAttributify,
-//   presetIcons,
-//   presetUno,
-//   transformerDirectives,
-//   transformerVariantGroup,
-// } from 'unocss';
-
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
   let env = loadEnv(mode, process.cwd());
@@ -52,19 +43,6 @@ export default defineConfig(({ command, mode }) => {
         mockPath: './mock',
         localEnabled: command === 'serve' && mode === 'mock',
       }),
-      // https://github.com/antfu/unocss
-      // see unocss.config.ts for config
-      // Unocss({
-      //   presets: [
-      //     presetUno(),
-      //     presetAttributify(),
-      //     presetIcons({
-      //       scale: 1.2,
-      //       warn: true,
-      //     }),
-      //   ],
-      //   transformers: [transformerDirectives(), transformerVariantGroup()],
-      // }),
     ],
     server: {
       proxy: {

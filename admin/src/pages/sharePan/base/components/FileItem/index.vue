@@ -1,9 +1,5 @@
 <template>
-  <div
-    class="file-item-container"
-    :class="{ checked: isCheck }"
-    @contextmenu="handleContextMenu"
-  >
+  <div class="file-item-container" :class="{ checked: isCheck }" @contextmenu="handleContextMenu">
     <input class="file-checkbox" type="checkbox" v-model="isCheck" />
     <div @click="fileClick">
       <img :src="file.iconSrc" alt="" width="128px" height="128px" />
@@ -45,7 +41,8 @@
   );
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
+  // $--file-hover-bg-color: #e9ecf0;
   .file-item-container {
     padding: 10px;
     border-radius: 8px;
@@ -56,7 +53,7 @@
     }
     &:hover,
     &.checked {
-      background-color: #e9ecf0;
+      background-color: var(--ep-file-hover);
       transform: scale(1.02);
       transition: transform 0.2s ease-out;
       .file-checkbox {
@@ -66,7 +63,7 @@
     .filename {
       line-height: 18px;
       font-size: 14px;
-      color: #03081a;
+      color: var(--ep-table-text-color);
       overflow: hidden;
     }
     .describe {

@@ -86,8 +86,8 @@
   .context-menu {
     position: fixed;
     font-size: 14px;
-    color: #03081a;
-    background-color: #fff;
+    color: var(--ep-contextmenu-text-color);
+    background-color: var(--ep-contextmenu-bc);
     border: 1px solid #ccc;
     padding: 10px 0 10px 10px;
     border-radius: 6px;
