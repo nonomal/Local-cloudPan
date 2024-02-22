@@ -23,7 +23,8 @@ export const formatDateTime = (datetime: number) => {
 };
 
 /** 文件大小换算 */
-export const formatFileSize = (size: number) => {
+export const formatFileSize = (isDir: boolean, size: number) => {
+  if (isDir) return '-';
   const value = Number(size);
   if (size && !isNaN(value)) {
     const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB', 'BB'];
@@ -37,11 +38,11 @@ export const formatFileSize = (size: number) => {
     }
     return `${k.toFixed(2)}${units[index]}`;
   }
-  return '-';
+  return '0B';
 };
 
 export const getFileType = (ext: string) => {
-  return Object.keys(fileTypes).find(ft => fileTypes[ft].includes(ext));
+  return Object.keys(fileTypes).find((ft) => fileTypes[ft].includes(ext));
 };
 
 export const getAssetsFile = (url: string) => {

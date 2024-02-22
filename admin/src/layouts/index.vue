@@ -36,5 +36,6 @@
     width: 100%;
     height: calc(100vh - var(--ep-menu-horizontal-height));
     padding: 20px;
+    position: relative;
   }
 </style>

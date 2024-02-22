@@ -1,6 +1,6 @@
 export interface ResponseData {
   code: number;
-  message?: string;
+  msg?: string;
 }
 
 export interface File {
@@ -11,7 +11,12 @@ export interface File {
   ext: string;
   modified: number;
 }
-export type formatFile = File & { fileType: string; iconSrc: string };
+export type formatFile = File & {
+  fileType: string;
+  iconSrc: string;
+  isRename: boolean;
+  isCreate?: boolean;
+};
 
 export interface FileResponseData extends ResponseData {
   data: {

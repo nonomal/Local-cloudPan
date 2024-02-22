@@ -88,10 +88,10 @@
     font-size: 14px;
     color: var(--ep-contextmenu-text-color);
     background-color: var(--ep-contextmenu-bc);
-    border: 1px solid #ccc;
+    border: 1px solid var(--ep-border-color-light);
     padding: 10px 0 10px 10px;
     border-radius: 6px;
-    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--ep-box-shadow-light);
     z-index: 9999;
 
     .menu-item {
@@ -103,10 +103,10 @@
       position: relative;
       /* 最后一栏没有下划线 */
       &:not(:last-child) {
-        border-bottom: 1px solid #d2d3d8;
+        border-bottom: 1px solid var(--ep-border-color-lighter);
       }
       &:hover {
-        background-color: #f0f0f0;
+        background-color: var(--ep-file-hover);
         .submenu-list {
           visibility: visible;
         }
@@ -129,7 +129,7 @@
         width: 0;
         height: 0;
         border: 5px solid transparent;
-        border-left-color: #000;
+        border-left-color: var(--ep-contextmenu-text-color);
         transform: translateY(-50%);
       }
     }

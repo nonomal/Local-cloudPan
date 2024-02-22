@@ -2,22 +2,7 @@
   <div class="tabbar-container">
     <!-- 面包屑导航 -->
     <div class="left-breadcrumb">
-      <el-breadcrumb separator-icon="ArrowRight">
-        <el-breadcrumb-item :to="{ path: route.path, query: { path: '' } }">
-          <span>全部文件</span>
-        </el-breadcrumb-item>
-
-        <el-breadcrumb-item
-          v-for="(path, index) in pathArr"
-          :key="index"
-          :to="{
-            path: route.path,
-            query: { path: queryParam(index) },
-          }"
-        >
-          <span>{{ path }}</span>
-        </el-breadcrumb-item>
-      </el-breadcrumb>
+      <Breadcrumb></Breadcrumb>
     </div>
     <!-- 模式切换 -->
     <div class="rig-switchMode">
@@ -45,19 +30,12 @@
   };
 </script>
 <script setup lang="ts">
-  import { computed, ref } from 'vue';
-  import { useRoute } from 'vue-router';
+  import { ref } from 'vue';
+  import Breadcrumb from './breadcrumb.vue';
 
-  const route = useRoute();
   const curMode = ref(0);
 
   const emit = defineEmits(['switchMode']);
-  const pathArr = computed(() => {
-    return route.query.path === '' ? [] : (route.query.path as string).split('/');
-  });
-  const queryParam = (index: number) => {
-    return pathArr.value.slice(0, index + 1).join('/');
-  };
   const handleClick = (command: number) => {
     curMode.value = command;
     emit('switchMode', command);
