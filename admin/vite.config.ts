@@ -10,7 +10,7 @@ import { viteMockServe } from 'vite-plugin-mock';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
-  let env = loadEnv(mode, process.cwd());
+  // let env = loadEnv(mode, process.cwd());
   return {
     resolve: {
       alias: {
@@ -45,10 +45,12 @@ export default defineConfig(({ command, mode }) => {
       }),
     ],
     server: {
+      host: '0.0.0.0',
+      port: 8888,
       proxy: {
         '/api': {
           //获取数据的服务器地址设置
-          target: 'http://localhost:9527',
+          target: 'http://127.0.0.1:9527',
           //需要代理跨域
           changeOrigin: true,
           //路径重写

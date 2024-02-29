@@ -3,7 +3,6 @@ const path = require('path');
 exports.global = {
   port: 9527,
   publicPath: 'F://',
-  uploadPath: 'F://',
 };
 
 exports.single = {

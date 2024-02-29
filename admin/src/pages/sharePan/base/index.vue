@@ -12,25 +12,44 @@
         </div>
 
         <!-- 列表视图 -->
-        <ContextMenu :menu="fileMenu" showarea=".list-view .ep-table__row" @select="handleSelect">
+        <ContextMenu
+          class="list-view"
+          ref="scrollContainerRef"
+          showarea=".list-view .ep-table__row"
+          :menu="fileMenu"
+          @select="handleSelect"
+        >
           <el-table
             v-if="curMode === 0"
             ref="tableRef"
-            class="list-view"
             :data="fileList"
             :show-overflow-tooltip="true"
+            :row-style="{ height: '50px' }"
+            :style="{
+              height: allDate.length * itemHeight + offset + 'px',
+              paddingTop: `${start * itemHeight}px`,
+              overflow: 'hidden',
+            }"
+            v-loading="loading"
             @row-click="toggleCheck"
             @row-contextmenu="(row) => toggleCheck(row, true)"
             @selection-change="handleSelectionChange"
-            style="
-              max-height: calc(100vh - var(--ep-menu-horizontal-height) - 160px);
-              overflow: hidden auto;
-            "
           >
             <el-table-column type="selection" width="55" />
             <el-table-column prop="name" label="文件名" min-width="100">
               <template #default="{ row }">
-                <img :src="row.iconSrc" alt="" width="25px" height="25px" class="file-pic" />
+                <template v-if="row.fileType === 'picture'">
+                  <el-image
+                    class="file-pic"
+                    fit="cover"
+                    :src="row.thumbnailUrl"
+                    :lazy="true"
+                    :preview-src-list="[row.fileUrl]"
+                    preview-teleported
+                    @click.stop="() => {}"
+                  />
+                </template>
+                <img v-else :src="row.iconSrc" class="file-pic" />
                 <template v-if="row.isRename">
                   <input
                     ref="renameIpt"
@@ -58,7 +77,7 @@
                     <ElIcon size="14"><CloseBold /></ElIcon>
                   </ElButton>
                 </template>
-                <span v-else class="filename" @click="handleClick(row)">{{ row.name }}</span>
+                <span v-else class="filename" @click.stop="handleClick(row)">{{ row.name }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="size" label="大小" min-width="30"></el-table-column>
@@ -68,19 +87,37 @@
 
         <!-- 网格视图 -->
         <ContextMenu :menu="fileMenu" showarea=".grid-view .file-item" @select="handleSelect">
-          <div class="grid-view" v-if="curMode === 1">
-            <div class="file-item" v-for="file in fileList" :key="file.id">
-              <FileItem
-                :file="file"
-                @file-click="handleClick"
-                @file-choosed="handleChoose"
-                @finish="finishRenameOrCreate"
-                @cancel="cancelRenameOrCreate"
-                :on-success="onSuccess"
-              />
+          <div
+            v-if="curMode === 1"
+            v-loading="loading"
+            ref="scrollContainerRef"
+            style="
+              max-height: calc(100vh - var(--ep-menu-horizontal-height) - 190px);
+              overflow: hidden auto;
+            "
+          >
+            <div
+              class="grid-view"
+              ref="flexContainerRef"
+              :style="{
+                height: Math.ceil(allDate.length / rowCount) * itemHeight + offset + 'px',
+                paddingTop: `${(start / rowCount) * itemHeight}px`,
+              }"
+            >
+              <div class="file-item" v-for="file in fileList" :key="file.id">
+                <FileItem
+                  :file="file"
+                  @file-click="handleClick"
+                  @file-choosed="handleChoose"
+                  @finish="finishRenameOrCreate"
+                  @cancel="cancelRenameOrCreate"
+                />
+              </div>
             </div>
           </div>
         </ContextMenu>
+        <!-- 数量信息 -->
+        <p class="pan-card-footer">{{ allDate.length }}个项目</p>
       </el-card>
     </ContextMenu>
 
@@ -92,6 +129,9 @@
       :popoverType="mvOrCopy"
       :on-success="() => getFileList(route.query.path as string)"
     />
+
+    <!-- 详情展示页 -->
+    <PlayPage v-if="playPageShow" v-model:playPageShow="playPageShow" :playInfo="playInfo" />
 
     <!-- 下载 -->
     <div class="download-container">
@@ -106,30 +146,52 @@
   };
 </script>
 <script setup lang="ts">
-  import { ref, onMounted, watch, computed } from 'vue';
+  import { ref, Ref, onMounted, watch, computed, nextTick } from 'vue';
   import { reqFileList, delteFile, renameFile, createDir } from '@/api/file/fileList';
-  import { ElMessage, ElMessageBox } from 'element-plus';
+  import { formatFile } from '@/api/file/types';
+  import { ElMessage, ElMessageBox, ElTable } from 'element-plus';
   import { useRouter, useRoute } from 'vue-router';
 
   import { getFileType, formatFileSize, formatDateTime } from '@/utils/filestatus';
-  import { formatFile } from '@/api/file/types';
+  import useVitualList from '@/composables/useVitualList';
+
   import ContextMenu from '@/components/ContextMenu/index.vue';
   import Tabbar from './components/Tabbar/index.vue';
   import FileItem from './components/FileItem/index.vue';
   import FileUpload from './components/FileUpload/index.vue';
   import MoveSelect from './components/MoveSelect/index.vue';
+  import PlayPage from './components/PlayPage/index.vue';
 
   const router = useRouter();
   const route = useRoute();
 
-  const fileList = ref([]);
-  const selectedFiles = ref([]); // 已勾选的文件
-  const curMode = ref(0); // 0: 列表视图 1: 网格视图
-  const downloadRef = ref(null);
-  const tableRef = ref(null);
-  const renameIpt = ref(null);
+  // 虚拟列表
+  const offset = computed(() => (curMode.value === 0 ? 40 : 0));
+  const itemHeight = computed(() => (curMode.value === 0 ? 50 : 245));
+  const flexContainerRef = ref<HTMLElement>(null);
+  const scrollContainerRef = ref<HTMLElement>(null);
+  const curMode = ref<0 | 1>(0); // 0: 列表视图 1: 网格视图
+  const { start, end, rowCount } = useVitualList({
+    renderCount: 30, // 渲染数量
+    offset, // 顶部偏移量
+    itemHeight, // 单个元素高度
+    scrollContainerRef, // 滚动容器
+    flexContainerRef, // 网格视图容器
+    flexItemWidth: 188, // 网格视图单个元素宽度
+    curMode, // 当前视图模式
+  });
+
+  const allDate = ref([]);
+  const selectedFiles = ref<formatFile[]>([]); // 已勾选的文件
+  const downloadRef = ref<HTMLElement>(null);
+  const tableRef = ref<InstanceType<typeof ElTable>>(null);
+  const renameIpt = ref<HTMLInputElement>(null);
   const mvOrCopyShow = ref(false);
+  const playPageShow = ref(false);
+  const loading = ref(false);
   const mvOrCopy = ref<'move' | 'copy'>('move');
+  const playInfo = ref({ url: '', type: '' });
+  const isCheckMap = new Map();
 
   // 右键菜单项
   const mainMenu = [
@@ -156,6 +218,10 @@
           { label: '删除', icon: 'Delete' },
         ];
   });
+  // 要渲染的列表
+  const fileList = computed(() => {
+    return allDate.value.slice(start.value, end.value);
+  });
   // 已勾选的文件名列表
   const filenameList = computed(() => {
     return selectedFiles.value.map((file) => file.name);
@@ -167,6 +233,7 @@
 
   // 获取文件数据
   const getFileList = async (path: string, sortMode?: 'name' | 'size' | 'modified') => {
+    loading.value = true;
     const result = await reqFileList(path, sortMode);
     if (result.code === 200) {
       const formatRes: formatFile[] = result.data.fileList.reduce((newList, file) => {
@@ -178,26 +245,46 @@
         newList.push({ ...file, size, modified, fileType, iconSrc, isRename: false });
         return newList;
       }, []);
-      fileList.value = formatRes;
+      allDate.value = formatRes;
+      selectedFiles.value = [];
+      clearSelection();
+      nextTick(() => {
+        loading.value = false;
+      });
     }
   };
 
-  // 文件点击
+  // 文件项点击
   const handleClick = (row: formatFile) => {
     const queryParam = route.query.path === '' ? '' : route.query.path + '/';
+    // 目录
     if (row.isDir) {
       router.push({ query: { path: `${queryParam}${row.name}` } });
-      selectedFiles.value = [];
-    } else {
+    }
+    // 音视频、pdf、txt、md
+    else if (row.fileType === 'video' || row.fileType === 'audio') {
+      const { fileType: type, fileUrl: url } = row;
+      playPageShow.value = true;
+      playInfo.value = { url, type };
+    } else if (row.fileType === 'document' && ['pdf', 'txt', 'md'].includes(row.ext)) {
+      const { ext: type, fileUrl: url } = row;
+      playPageShow.value = true;
+      playInfo.value = { url, type };
+    } else if (row.fileType === 'picture') {
       ElMessage({
         type: 'info',
-        message: '点击了文件',
+        message: '请点击图片查看原图！',
+      });
+    } else {
+      ElMessage({
+        type: 'warning',
+        message: '此类文件无法预览，请下载后查看！',
       });
     }
   };
 
   // 视图切换
-  const handleSwitch = (mode: number) => {
+  const handleSwitch = (mode: 0 | 1) => {
     curMode.value = mode;
     selectedFiles.value = [];
   };
@@ -207,6 +294,7 @@
     const path = route.query.path as string;
     const handleDownload = () => {
       downloadRef.value.click();
+      clearSelection();
       selectedFiles.value = [];
     };
     const handleDelete = () => {
@@ -228,7 +316,6 @@
               message: '删除成功！',
             });
           }
-          selectedFiles.value = [];
           getFileList(path);
         })
         .catch(() => {
@@ -239,7 +326,7 @@
         });
     };
     const handleRename = () => {
-      fileList.value.forEach((file) => {
+      allDate.value.forEach((file) => {
         file.isRename = false;
       });
       selectedFiles.value[0].isRename = true;
@@ -251,9 +338,10 @@
     const handleCopy = () => {
       mvOrCopy.value = 'copy';
       mvOrCopyShow.value = true;
+      clearSelection();
     };
     const handleCreateDir = () => {
-      fileList.value.unshift({
+      allDate.value.unshift({
         name: '新建文件夹',
         size: '-',
         isRename: true,
@@ -278,21 +366,32 @@
   };
 
   // 文件勾选（网格模式）
-  const handleChoose = (isChecked: boolean, file) => {
-    if (isChecked) {
+  const handleChoose = (isChecked: Ref, file: formatFile) => {
+    if (isChecked.value) {
       selectedFiles.value.push(file);
+      isCheckMap.set(file.id, isChecked);
     } else {
       const index = selectedFiles.value.findIndex((f) => f.id === file.id);
       if (index !== -1) {
         selectedFiles.value.splice(index, 1);
+        isCheckMap.delete(file.id);
       }
     }
+  };
+  // 清除所有选中状态
+  const clearSelection = () => {
+    isCheckMap.forEach((isCheck) => {
+      isCheck.value = false;
+    });
+    isCheckMap.clear();
+    tableRef?.value?.clearSelection();
   };
   // 文件勾选（列表模式）
   const handleSelectionChange = (select) => {
     selectedFiles.value = select;
   };
-  const toggleCheck = (row, isSingle?) => {
+  const toggleCheck = (row, isSingle?: boolean) => {
+    // 单选（鼠标右键）
     if (isSingle === true) {
       if (selectedFiles.value.findIndex((file) => file.id === row.id) !== -1) {
         return;
@@ -300,6 +399,8 @@
       tableRef.value.clearSelection();
       tableRef.value.setCurrentRow(row);
     }
+    // 切换勾选状态（鼠标左键）
+    // @ts-ignore
     tableRef.value.toggleRowSelection(row);
   };
 
@@ -340,31 +441,19 @@
   // 取消重命名或创建
   const cancelRenameOrCreate = (row) => {
     if (row.isCreate) {
-      fileList.value.shift();
+      allDate.value.shift();
     }
     row.isRename = false;
     tableRef.value?.toggleRowSelection(row, false);
-  };
-
-  const onSuccess = async (file, newName) => {
-    const operateText = file.isCreate ? '新建文件夹' : '重命名';
-    if (file.isCreate) {
-      await createDir(route.query.path as string, newName);
-      delete file.isCreate;
-    } else {
-      await renameFile(route.query.path as string, file.name, newName);
-    }
-    ElMessage({
-      type: 'success',
-      message: `${operateText}成功！`,
-    });
-    await getFileList(route.query.path as string);
   };
 
   watch(
     () => route.query.path,
     (newPath) => {
       getFileList(newPath as string);
+      // 防止面包屑跳转时的滚动条位置不正确
+      start.value = 0;
+      end.value = 30;
     }
   );
   onMounted(() => {
@@ -380,6 +469,8 @@
     border-radius: 10px;
     max-width: calc(100% - 5px);
     min-width: 700px;
+    // max-height: calc(100vh - var(--ep-menu-horizontal-height) - 160px);
+    // overflow-y: auto;
     .tabbar-container {
       margin-bottom: 1rem;
     }
@@ -391,7 +482,11 @@
       }
     }
     .list-view {
+      max-height: calc(100vh - var(--ep-menu-horizontal-height) - 190px);
+      overflow: hidden auto;
       .file-pic {
+        width: 25px;
+        height: 25px;
         vertical-align: bottom;
         margin-right: 5px;
       }
@@ -418,8 +513,7 @@
       flex-wrap: wrap;
       padding: 0 25px;
       height: fit-content;
-      max-height: calc(100vh - var(--ep-menu-horizontal-height) - 160px);
-      overflow: hidden auto;
+      align-content: start;
       .file-item {
         font-size: 14px;
         text-align: center;
@@ -427,6 +521,12 @@
         width: 168px;
         vertical-align: top;
       }
+    }
+    .pan-card-footer {
+      font-size: 15px;
+      line-height: 15px;
+      text-align: left;
+      margin-top: 15px;
     }
   }
   :deep(.ep-table__body tr:hover > td.ep-table__cell) {

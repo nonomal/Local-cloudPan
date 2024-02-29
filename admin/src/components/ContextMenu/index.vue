@@ -2,12 +2,17 @@
   <div ref="containerRef">
     <slot></slot>
     <Teleport to="body">
-      <div v-show="showMenu" class="context-menu" :style="{ left: x + 'px', top: y + 'px' }">
+      <div
+        v-show="showMenu"
+        class="context-menu"
+        :style="{ left: pos.posX + 'px', top: pos.posY + 'px' }"
+        v-resize="handleSizeChange"
+      >
         <div
           v-for="item in menu"
           :key="item.label"
-          class="menu-item"
           :class="{ 'has-submenu': item.subMenu }"
+          class="menu-item"
           @click="handleClick(item)"
         >
           <p>
@@ -18,12 +23,12 @@
           </p>
           <!-- 子菜单 -->
           <template v-if="item.subMenu">
-            <div class="context-menu submenu-list">
+            <div class="context-menu submenu-list" :style="submenuStyles">
               <div
-                @click="handleSubClick(item, subItem)"
                 class="menu-item"
-                v-for="subItem in item.subMenu"
                 :key="subItem.label"
+                v-for="subItem in item.subMenu"
+                @click="handleSubClick(item, subItem)"
               >
                 <p>
                   <el-icon
@@ -48,8 +53,9 @@
   export default { name: 'ContextMenu' };
 </script>
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, computed, CSSProperties } from 'vue';
   import useContextMenu from '@/composables/useContextMenu';
+  import useViewPort from '@/composables/useViewport';
 
   type MenuItem = {
     label: string;
@@ -60,11 +66,42 @@
     menu: Array<MenuItem>;
     showarea?: string;
   }>();
-
   const emit = defineEmits(['select']);
-  const containerRef = ref(null);
-  const { x, y, showMenu } = useContextMenu(containerRef, props.showarea || undefined);
 
+  const containerRef = ref(null);
+  const w = ref(0);
+  const h = ref(0);
+  const { x, y, showMenu } = useContextMenu(containerRef, props.showarea || undefined);
+  const { vw, vh } = useViewPort();
+
+  const submenuStyles = computed<CSSProperties>(() => {
+    const isRowReverse = x.value > vw.value - w.value;
+    const isColReverse = y.value > vh.value - h.value;
+    return {
+      [isRowReverse ? 'left' : 'right']: 0,
+      [isColReverse ? 'bottom' : 'top']: 0,
+      transform: `translateX(${isRowReverse ? '-' : ''}100%)`,
+    };
+  });
+  const pos = computed(() => {
+    let posX = x.value;
+    let posY = y.value;
+    // 横向边界
+    if (x.value > vw.value - w.value) {
+      posX = x.value - w.value;
+    }
+    // 纵向边界
+    if (y.value > vh.value - h.value) {
+      posY = vh.value - h.value;
+    }
+    return { posX, posY };
+  });
+
+  // 菜单窗口size变化
+  const handleSizeChange = (e) => {
+    w.value = e.width;
+    h.value = e.height;
+  };
   // 菜单的点击事件
   function handleClick(item: MenuItem) {
     showMenu.value = false;
@@ -74,7 +111,6 @@
     }
     emit('select', item);
   }
-
   // 副菜单的点击事件
   function handleSubClick(item: MenuItem, subItem: MenuItem) {
     showMenu.value = false;
@@ -95,12 +131,12 @@
     z-index: 9999;
 
     .menu-item {
+      position: relative;
       height: 30px;
       line-height: 30px;
       min-width: 100px;
       padding-left: 12px;
       cursor: pointer;
-      position: relative;
       /* 最后一栏没有下划线 */
       &:not(:last-child) {
         border-bottom: 1px solid var(--ep-border-color-lighter);
@@ -113,9 +149,6 @@
       }
       .submenu-list {
         position: absolute;
-        top: 0;
-        right: 0;
-        transform: translateX(100%);
         visibility: hidden;
       }
     }

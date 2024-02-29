@@ -140,7 +140,7 @@
     };
     const file = getFile(rawfile);
     file.status = 'uploading';
-    file.progress = e.percent.toFixed(2) || 0;
+    file.progress = +e.percent.toFixed(2) || 0;
   };
 </script>
 

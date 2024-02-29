@@ -10,6 +10,8 @@ export interface File {
   size: number;
   ext: string;
   modified: number;
+  fileUrl: string;
+  thumbnailUrl: string | undefined;
 }
 export type formatFile = File & {
   fileType: string;

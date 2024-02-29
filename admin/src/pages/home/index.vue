@@ -1,134 +1,174 @@
 <template>
-  <el-table class="list-view" :data="fileList">
-    <el-table-column type="selection" width="55" />
-    <el-table-column prop="name" label="文件名" min-width="100" :show-overflow-tooltip="true">
-      <template #default="{ row }">
-        <img :src="row.iconSrc" alt="" width="25px" height="25px" class="file-pic" />
-        {{ row.name }}
-      </template>
-    </el-table-column>
-    <el-table-column prop="size" label="大小" min-width="30"></el-table-column>
-    <el-table-column prop="modified" label="修改时间" min-width="70"></el-table-column>
-  </el-table>
-  <el-button type="primary" @click="handleClick">消息框</el-button>
+  <el-card class="container">
+    <div class="md-wrapper" ref="mdWrapper"></div>
+  </el-card>
 </template>
 
 <script setup lang="ts">
-  import { ElMessageBox, ElMessage } from 'element-plus';
-  import { ref } from 'vue';
-  const fileList = ref([
-    {
-      id: 281474976710695,
-      name: '$RECYCLE.BIN',
-      isDir: true,
-      ext: 'BIN',
-      size: '-',
-      modified: '2022-09-15 04:31:26',
-      iconSrc: '/src/assets/fileType/directory.svg',
+  import { onMounted, ref } from 'vue';
+  import request from '@/utils/request';
+
+  import MarkdownIt from 'markdown-it';
+  import { full as emoji } from 'markdown-it-emoji';
+  import Mark from 'markdown-it-mark';
+  import hljs from 'highlight.js';
+  import 'highlight.js/styles/github.min.css';
+
+  const mdWrapper = ref<HTMLElement>(null);
+  const md = MarkdownIt({
+    html: true, //可以识别html
+    linkify: true, //自动检测像链接的文本
+    typographer: true, //优化排版，标点
+    highlight: function (str, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        try {
+          return (
+            '<pre><code class="hljs">' +
+            hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+            '</code></pre>'
+          );
+        } catch (__) {}
+      }
+      return '<pre><code class="hljs">' + md.utils.escapeHtml(str) + '</code></pre>';
     },
-    {
-      id: 844424930149216,
-      name: '.pnpm-store',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2023-06-01 12:49:10',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-    {
-      id: 844424930152344,
-      name: '360Downloads',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2022-07-02 17:12:56',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-    {
-      id: 1970324837104753,
-      name: 'CloudMusic',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2023-12-05 14:58:33',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-    {
-      id: 17169973579485568,
-      name: 'LYS',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2023-07-12 18:53:28',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-    {
-      id: 12947848929187182,
-      name: 'SSY',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2022-11-15 11:30:30',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-    {
-      id: 1688849860755076,
-      name: 'Tdea',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2023-04-26 09:06:27',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-    {
-      id: 1970324837013968,
-      name: 'VS_pro',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2022-07-10 22:02:00',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-    {
-      id: 562949954134513,
-      name: 'WCR',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2023-12-12 20:00:48',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-    {
-      id: 281474977344703,
-      name: 'WYC',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2024-02-07 22:01:49',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-    {
-      id: 1970324837014033,
-      name: 'YJ',
-      isDir: true,
-      ext: '',
-      size: '-',
-      modified: '2023-01-30 18:48:36',
-      iconSrc: '/src/assets/fileType/directory.svg',
-    },
-  ]);
-  const handleClick = () => {
-    ElMessageBox.confirm('文件一经删除，无法恢复，确定删除所选的文件吗？', '确定删除', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }).then(() => {
-      ElMessage({
-        type: 'success',
-        message: '删除成功！',
-      });
-    });
+  });
+  md.use(emoji).use(Mark);
+  const initRender = async () => {
+    const res = await request.get(
+      'http://127.0.0.1:9527/WYC/%E5%89%8D%E7%AB%AF%E5%AD%A6%E4%B9%A0/vue.md'
+    );
+    mdWrapper.value.innerHTML = md.render(res);
   };
+
+  onMounted(() => {
+    initRender();
+  });
 </script>
 
-<style scoped></style>
+<style scoped lang="scss">
+  .container {
+    border-radius: 10px;
+    max-width: calc(100% - 5px);
+    min-width: 700px;
+    max-height: calc(100vh - var(--ep-menu-horizontal-height) - 160px);
+    border: 1px solid black;
+    overflow-y: auto;
+    text-align: initial;
+  }
+  .md-wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 20px 30px 100px;
+    font-size: 15px;
+  }
+  :deep() {
+    h1 {
+      padding-bottom: 0.4rem;
+      font-size: 2.2rem;
+      line-height: 1.3;
+    }
+    h2 {
+      font-size: 1.75rem;
+      line-height: 1.225;
+      margin: 35px 0 15px;
+      padding-bottom: 0.5em;
+      border-bottom: 1px solid #ddd;
+    }
+    h3 {
+      font-size: 1.4rem;
+      line-height: 1.43;
+      margin: 20px 0 7px;
+    }
+    h4 {
+      font-size: 1.2rem;
+    }
+    h5 {
+      font-size: 1rem;
+    }
+    h6 {
+      font-size: 1rem;
+      color: #777;
+    }
+    p {
+      line-height: 1.6rem;
+      word-spacing: 0.05rem;
+    }
+    pre .hljs {
+      border-radius: 10px;
+      background: #eceaea;
+    }
+    ol li {
+      padding-left: 0.5rem;
+    }
+    ul,
+    ol {
+      padding-left: 30px;
+    }
+    p,
+    blockquote,
+    ul,
+    ol,
+    dl,
+    table {
+      margin: 0.8em 0;
+    }
+
+    li > ol,
+    li > ul {
+      margin: 0 0;
+    }
+
+    hr {
+      height: 2px;
+      padding: 0;
+      margin: 16px 0;
+      background-color: #e7e7e7;
+      border: 0 none;
+      overflow: hidden;
+      box-sizing: content-box;
+    }
+    blockquote {
+      border-left: 4px solid #42b983;
+      padding: 10px 15px;
+      color: #777;
+      background-color: rgba(66, 185, 131, 0.1);
+    }
+    thead {
+      background-color: #fafafa;
+    }
+    mark {
+      background-color: #81a781;
+      border-radius: 2px;
+      padding: 2px 4px;
+      margin: 0 2px;
+      color: #222;
+      font-weight: 500;
+    }
+    table {
+      padding: 0;
+      word-break: initial;
+      tr {
+        border-top: 1px solid #dfe2e5;
+        margin: 0;
+        padding: 0;
+        &:nth-child(2n) {
+          background-color: #fafafa;
+        }
+        th {
+          font-weight: bold;
+          border: 1px solid #dfe2e5;
+          border-bottom: 0;
+          text-align: left;
+          margin: 0;
+          padding: 6px 13px;
+        }
+        td {
+          border: 1px solid #dfe2e5;
+          text-align: left;
+          margin: 0;
+          padding: 6px 13px;
+        }
+      }
+    }
+  }
+</style>

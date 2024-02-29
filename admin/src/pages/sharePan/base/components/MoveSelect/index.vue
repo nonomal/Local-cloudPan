@@ -79,13 +79,13 @@
   }>();
 
   const route = useRoute();
-  const pathArr = ref(['全部文件']);
-  const dictoryArr = ref([]);
+  const pathArr = ref<string[]>(['全部文件']); // 面包屑路径数组
+  const dictoryArr = ref([]); // 目录列表
   const emit = defineEmits(['update:mvOrCopyShow']);
 
   const getDictoryList = async (item: string) => {
-    const curPath = pathArr.value.slice(1).join('/');
-    const result = await reqFileList(curPath + '/' + item);
+    const curPath = [...pathArr.value.slice(1), item].join('/');
+    const result = await reqFileList(curPath);
     if (result.code === 200) {
       const formatRes = result.data.fileList.filter((f) => f.isDir).map((f) => f.name);
       dictoryArr.value = formatRes;

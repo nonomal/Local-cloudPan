@@ -1,20 +1,26 @@
 const Koa = require('koa');
-const cors = require('@koa/cors');
-const { bodyParser } = require('@koa/bodyparser');
-// const router = require('./router.js');
-const static = require('koa-static');
+const cors = require('@koa/cors'); // 跨域
+const { bodyParser } = require('@koa/bodyparser'); // 请求正文解析
+const static = require('koa-static'); // 静态文件服务
+const etag = require('koa-etag'); // etag缓存
+const compress = require('koa-compress'); // gzip压缩
 const config = require('./config');
 
 const app = new Koa();
 
-// 添加跨域支持
 app.use(cors());
-
-// 添加请求正文解析中间件
 app.use(bodyParser({ jsonLimit: '50mb' }));
-
-// 静态文件服务
+app.use(async (ctx, next) => {
+  await next();
+  if (ctx.fresh) {
+    ctx.status = 304;
+    ctx.body = null;
+  }
+});
+app.use(etag()); // etag缓存
+app.use(compress({ threshold: 2048, br: false }));
 app.use(static(config.global.publicPath));
+app.use(require('./controller/file').routes());
 
 // 验证类型 => 验证大小 => 保存文件
 // app.use(require('./controller/upload/single').routes());
@@ -23,7 +29,6 @@ app.use(static(config.global.publicPath));
 // app.use(require('./controller/upload/multi').routes());
 // app.use(require('./controller/download').routes());
 // app.use(require('./controller/read').routes());
-app.use(require('./controller/file').routes());
 
 // 处理错误
 app.on('error', (err, ctx) => {

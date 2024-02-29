@@ -2,7 +2,20 @@
   <div class="file-item-container" :class="{ checked: isCheck }" @contextmenu="handleContextMenu">
     <input class="file-checkbox" type="checkbox" v-model="isCheck" />
     <div @click="fileClick">
-      <img :src="file.iconSrc" alt="" width="128px" height="128px" />
+      <!-- 图片展示 -->
+      <template v-if="file.fileType === 'picture'">
+        <el-image
+          :src="file.thumbnailUrl"
+          class="picture"
+          :lazy="true"
+          fit="cover"
+          :preview-src-list="[file.fileUrl]"
+          preview-teleported
+          @click.stop="() => {}"
+        />
+      </template>
+      <img :src="file.iconSrc" alt="" class="picture" v-else />
+
       <template v-if="file.isRename">
         <input
           ref="renameIpt"
@@ -26,12 +39,14 @@
         </ElButton>
       </template>
       <p v-else class="filename">{{ file.name }}</p>
+
       <div class="describe">
         <p v-if="file.isDir">{{ file.modified }}</p>
         <p v-else>{{ file.size }}</p>
       </div>
     </div>
   </div>
+  <!-- </div> -->
 </template>
 
 <script lang="ts">
@@ -40,7 +55,7 @@
   };
 </script>
 <script setup lang="ts">
-  import { ref, watch } from 'vue';
+  import { ref, watch, onUnmounted } from 'vue';
   import type { formatFile } from '@/api/file/types';
 
   const isCheck = ref(false);
@@ -48,13 +63,13 @@
 
   const props = defineProps<{
     file: formatFile;
-    onSuccess: (file: formatFile, newName: string) => void;
   }>();
   const emit = defineEmits(['fileClick', 'fileChoosed', 'finish', 'cancel']);
 
   const fileClick = () => {
     emit('fileClick', props.file);
   };
+  // 右键点击时勾选，事件传播到父组件，弹出右键菜单
   const handleContextMenu = (e: MouseEvent) => {
     e.preventDefault();
     isCheck.value = true;
@@ -62,17 +77,21 @@
 
   const finishRenameOrCreate = async (file: formatFile) => {
     emit('finish', file, renameIpt.value.value);
+    isCheck.value = false;
   };
   const cancelRename = (file: formatFile) => {
-    isCheck.value = false;
     emit('cancel', file);
+    isCheck.value = false;
   };
   watch(
     () => isCheck.value,
     () => {
-      emit('fileChoosed', isCheck.value, props.file);
+      emit('fileChoosed', isCheck, props.file);
     }
   );
+  onUnmounted(() => {
+    emit('fileChoosed', false, props.file);
+  });
 </script>
 
 <style lang="scss">
@@ -84,6 +103,7 @@
     .file-checkbox {
       display: block;
       visibility: hidden;
+      margin: 0 5px 10px 0;
     }
     &:hover,
     &.checked {
@@ -93,6 +113,11 @@
       .file-checkbox {
         visibility: visible;
       }
+    }
+    .picture {
+      width: 128px;
+      height: 128px;
+      border-radius: 10px;
     }
     .rename-ipt {
       width: 150px;
@@ -107,14 +132,14 @@
     }
     .rename-btn {
       position: absolute;
-      width: 20px;
-      height: 20px;
+      width: 15px;
+      height: 15px;
       padding: 2px;
       top: 10px;
       right: 10px;
 
       &:first-of-type {
-        right: 40px;
+        right: 35px;
       }
     }
     .filename {
