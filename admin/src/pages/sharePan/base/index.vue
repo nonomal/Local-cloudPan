@@ -42,14 +42,14 @@
                   <el-image
                     class="file-pic"
                     fit="cover"
-                    :src="row.thumbnailUrl"
+                    :src="row.thumbnailUrl || row.fileUrl"
                     :lazy="true"
                     :preview-src-list="[row.fileUrl]"
                     preview-teleported
                     @click.stop="() => {}"
                   />
                 </template>
-                <img v-else :src="row.iconSrc" class="file-pic" />
+                <img v-else :src="getAssetsFile(row)" class="file-pic" />
                 <template v-if="row.isRename">
                   <input
                     ref="renameIpt"
@@ -148,6 +148,7 @@
 <script setup lang="ts">
   import { ref, Ref, onMounted, watch, computed, nextTick } from 'vue';
   import { reqFileList, delteFile, renameFile, createDir } from '@/api/file/fileList';
+  import { getAssetsFile } from '@/utils/tool';
   import { formatFile } from '@/api/file/types';
   import { ElMessage, ElMessageBox, ElTable } from 'element-plus';
   import { useRouter, useRoute } from 'vue-router';
@@ -240,9 +241,7 @@
         const fileType = getFileType(file.ext);
         const size = formatFileSize(file.isDir, file.size);
         const modified = formatDateTime(file.modified);
-        const iconPath = file.isDir ? 'directory' : fileType ? `${fileType}/${file.ext}` : 'others';
-        const iconSrc = `/src/assets/fileType/${iconPath}.svg`;
-        newList.push({ ...file, size, modified, fileType, iconSrc, isRename: false });
+        newList.push({ ...file, size, modified, fileType, isRename: false });
         return newList;
       }, []);
       allDate.value = formatRes;

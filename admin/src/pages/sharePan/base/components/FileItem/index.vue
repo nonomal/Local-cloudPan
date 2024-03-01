@@ -5,16 +5,16 @@
       <!-- 图片展示 -->
       <template v-if="file.fileType === 'picture'">
         <el-image
-          :src="file.thumbnailUrl"
-          class="picture"
+          :src="file.thumbnailUrl || file.fileUrl"
           :lazy="true"
-          fit="cover"
           :preview-src-list="[file.fileUrl]"
+          class="picture"
+          fit="cover"
           preview-teleported
           @click.stop="() => {}"
         />
       </template>
-      <img :src="file.iconSrc" alt="" class="picture" v-else />
+      <img :src="getAssetsFile(file)" class="picture" v-else />
 
       <template v-if="file.isRename">
         <input
@@ -56,6 +56,7 @@
 </script>
 <script setup lang="ts">
   import { ref, watch, onUnmounted } from 'vue';
+  import { getAssetsFile } from '@/utils/tool';
   import type { formatFile } from '@/api/file/types';
 
   const isCheck = ref(false);

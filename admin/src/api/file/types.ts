@@ -15,7 +15,7 @@ export interface File {
 }
 export type formatFile = File & {
   fileType: string;
-  iconSrc: string;
+  // iconSrc: string;
   isRename: boolean;
   isCreate?: boolean;
 };

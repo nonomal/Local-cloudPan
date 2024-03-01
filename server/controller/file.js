@@ -96,11 +96,12 @@ router.get('/download', async (ctx) => {
 });
 
 // 文件读取
-const picType = ['jpeg', 'jpg', 'jfif', 'png', 'bmp', 'svg', 'gif', 'webp'];
+const picType = ['jpeg', 'jpg', 'png', 'svg', 'gif', 'webp'];
 router.get('/fileList', async (ctx) => {
   try {
     const { path: reqPath, sortMode } = ctx.request.query;
     const filePath = path.join(config.global.publicPath, reqPath);
+    console.log(ctx.request.origin);
     // 读取路径下所有文件
     const files = await fs.readdir(filePath, {
       withFileTypes: true,
@@ -112,7 +113,7 @@ router.get('/fileList', async (ctx) => {
       const isDir = file.isDirectory() ? true : false;
       const ext = path.extname(name).substring(1).toLowerCase();
       let thumbnailUrl;
-      // 图片类型
+      // 支持压缩的图片类型
       if (picType.includes(ext) && !isDir) {
         const path = reqPath === '' ? '' : reqPath + '/';
         thumbnailUrl = new URL(`thumbnail/${path}${name}`, ctx.request.origin).href;
