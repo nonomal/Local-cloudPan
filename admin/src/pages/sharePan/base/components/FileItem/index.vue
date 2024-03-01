@@ -5,9 +5,9 @@
       <!-- 图片展示 -->
       <template v-if="file.fileType === 'picture'">
         <el-image
-          :src="file.thumbnailUrl || file.fileUrl"
+          :src="file.thumbnailPath || file.filePath"
           :lazy="true"
-          :preview-src-list="[file.fileUrl]"
+          :preview-src-list="[file.filePath]"
           class="picture"
           fit="cover"
           preview-teleported

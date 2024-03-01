@@ -2,7 +2,7 @@
   <div class="upload-container">
     <el-upload
       ref="uploadRef"
-      action="http://localhost:9527/upload"
+      action="/api/upload"
       multiple
       :data="{ path: route.query.path ? route.query.path : '' }"
       :show-file-list="false"

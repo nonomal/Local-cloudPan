@@ -42,9 +42,9 @@
                   <el-image
                     class="file-pic"
                     fit="cover"
-                    :src="row.thumbnailUrl || row.fileUrl"
+                    :src="row.thumbnailPath || row.filePath"
                     :lazy="true"
-                    :preview-src-list="[row.fileUrl]"
+                    :preview-src-list="[row.filePath]"
                     preview-teleported
                     @click.stop="() => {}"
                   />
@@ -229,7 +229,11 @@
   });
   // 文件的下载链接
   const fileHref = computed(() => {
-    return `http://localhost:9527/download?filenameList=[${filenameList.value}]&path=${route.query.path ? route.query.path : ''}`;
+    const href = new URL(
+      `api/download?filenameList=[${filenameList.value}]&path=${route.query.path ? route.query.path : ''}`,
+      window.location.origin
+    ).href;
+    return href;
   });
 
   // 获取文件数据
@@ -237,11 +241,23 @@
     loading.value = true;
     const result = await reqFileList(path, sortMode);
     if (result.code === 200) {
+      const origin = window.location.origin;
       const formatRes: formatFile[] = result.data.fileList.reduce((newList, file) => {
-        const fileType = getFileType(file.ext);
-        const size = formatFileSize(file.isDir, file.size);
-        const modified = formatDateTime(file.modified);
-        newList.push({ ...file, size, modified, fileType, isRename: false });
+        let { ext, isDir, size, modified, filePath, thumbnailPath } = file;
+        const fileType = getFileType(ext);
+        size = formatFileSize(isDir, size as number);
+        modified = formatDateTime(modified as number);
+        filePath = new URL(filePath, origin).href;
+        thumbnailPath = new URL(thumbnailPath, origin).href;
+        newList.push({
+          ...file,
+          size,
+          modified,
+          fileType,
+          filePath,
+          thumbnailPath,
+          isRename: false,
+        });
         return newList;
       }, []);
       allDate.value = formatRes;
@@ -262,11 +278,11 @@
     }
     // 音视频、pdf、txt、md
     else if (row.fileType === 'video' || row.fileType === 'audio') {
-      const { fileType: type, fileUrl: url } = row;
+      const { fileType: type, filePath: url } = row;
       playPageShow.value = true;
       playInfo.value = { url, type };
     } else if (row.fileType === 'document' && ['pdf', 'txt', 'md'].includes(row.ext)) {
-      const { ext: type, fileUrl: url } = row;
+      const { ext: type, filePath: url } = row;
       playPageShow.value = true;
       playInfo.value = { url, type };
     } else if (row.fileType === 'picture') {
@@ -337,7 +353,6 @@
     const handleCopy = () => {
       mvOrCopy.value = 'copy';
       mvOrCopyShow.value = true;
-      clearSelection();
     };
     const handleCreateDir = () => {
       allDate.value.unshift({
@@ -346,7 +361,7 @@
         isRename: true,
         isCreate: true,
         modified: formatDateTime(Date.now()),
-        iconSrc: '/src/assets/fileType/directory.svg',
+        iconSrc: new URL('@/assets/fileType/directory.svg', import.meta.url).href,
       });
     };
     const openration = {

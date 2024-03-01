@@ -27,12 +27,10 @@ const upload = multer({
 router.post('/upload', upload.single(config.single.fieldName), async (ctx) => {
   try {
     const file = ctx.request.file;
-    const url = new URL(`${ctx.request.body.path}/${file.filename}`, ctx.request.origin).href;
     ctx.request.status = 200;
     ctx.body = {
       code: 200,
       msg: '文件上传成功',
-      data: url,
     };
   } catch (error) {
     console.log(error);
@@ -100,10 +98,9 @@ const picType = ['jpeg', 'jpg', 'png', 'svg', 'gif', 'webp'];
 router.get('/fileList', async (ctx) => {
   try {
     const { path: reqPath, sortMode } = ctx.request.query;
-    const filePath = path.join(config.global.publicPath, reqPath);
-    console.log(ctx.request.origin);
+    const reqFilePath = path.join(config.global.publicPath, reqPath);
     // 读取路径下所有文件
-    const files = await fs.readdir(filePath, {
+    const files = await fs.readdir(reqFilePath, {
       withFileTypes: true,
     });
     const fileList = [];
@@ -112,16 +109,16 @@ router.get('/fileList', async (ctx) => {
       const name = file.name;
       const isDir = file.isDirectory() ? true : false;
       const ext = path.extname(name).substring(1).toLowerCase();
-      let thumbnailUrl;
+      let thumbnailPath;
       // 支持压缩的图片类型
+      const reqpath = reqPath === '' ? '' : reqPath + '/';
       if (picType.includes(ext) && !isDir) {
-        const path = reqPath === '' ? '' : reqPath + '/';
-        thumbnailUrl = new URL(`thumbnail/${path}${name}`, ctx.request.origin).href;
+        thumbnailPath = `api/thumbnail/${reqpath}${name}`;
       }
-      const fileUrl = new URL(`${reqPath}/${name}`, ctx.request.origin).href;
+      const filePath = `api/${reqpath}${name}`;
 
       try {
-        const { ino, size, mtimeMs } = await fs.stat(path.join(filePath, name));
+        const { ino, size, mtimeMs } = await fs.stat(path.join(reqFilePath, name));
         fileList.push({
           id: ino,
           name,
@@ -129,10 +126,10 @@ router.get('/fileList', async (ctx) => {
           ext,
           size,
           modified: mtimeMs,
-          fileUrl,
-          thumbnailUrl,
+          filePath,
+          thumbnailPath,
         });
-      } catch {
+      } catch (e) {
         // 文件无权限或错误的文件路径
       }
     }
@@ -201,6 +198,7 @@ router.post('/fileMoveOrCopy', async (ctx) => {
     const { fileList, destination, path: reqPath, dtype } = ctx.request.body;
     const operate = dtype === 'move' ? fs.move : fs.copy;
     const operateText = dtype === 'move' ? '移动' : '复制';
+
     for (const file of fileList) {
       const oldPath = path.join(config.global.publicPath, reqPath, file);
       const newPath = path.join(config.global.publicPath, destination, file);

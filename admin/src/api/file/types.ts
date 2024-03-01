@@ -7,15 +7,14 @@ export interface File {
   id: number;
   name: string;
   isDir: boolean;
-  size: number;
+  size: number | string;
   ext: string;
-  modified: number;
-  fileUrl: string;
-  thumbnailUrl: string | undefined;
+  modified: number | string;
+  filePath: string;
+  thumbnailPath: string | undefined;
 }
 export type formatFile = File & {
   fileType: string;
-  // iconSrc: string;
   isRename: boolean;
   isCreate?: boolean;
 };
