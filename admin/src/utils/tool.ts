@@ -12,6 +12,7 @@ export const throttle = (fn, time) => {
   };
 };
 
+//
 export const getAssetsFile = (file: formatFile) => {
   const path = file.isDir
     ? `/src/assets/fileType/directory.svg`

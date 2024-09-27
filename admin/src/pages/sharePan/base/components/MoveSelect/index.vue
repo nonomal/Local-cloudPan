@@ -4,23 +4,25 @@
     <template #header>
       <div class="card-header">
         <span class="card-header-text">{{ popoverType === 'move' ? '移动到' : '复制到' }}</span>
-        <ElIcon size="15" class="close-btn" @click="hanleClose"><CloseBold /></ElIcon>
+        <ElIcon :size="15" class="close-btn" @click="hanleClose"><CloseBold /></ElIcon>
       </div>
     </template>
+
     <template #default>
+      <!-- 面包屑 -->
       <div class="breadcrumb-wrapper">
         <el-breadcrumb separator-icon="ArrowRight">
           <el-breadcrumb-item
             v-for="(path, index) in pathArr"
             :key="index"
             :to="{ path: route.path }"
-            @click="handleClick(path)"
-          >
+            @click="handleClick(path)">
             <span>{{ path }}</span>
           </el-breadcrumb-item>
         </el-breadcrumb>
       </div>
 
+      <!-- table -->
       <div class="table-wrapper">
         <table class="dic-table" v-if="dictoryArr.length > 1">
           <colgroup>
@@ -31,16 +33,14 @@
               v-for="(item, index) in dictoryArr"
               :key="index"
               class="dic-table-row"
-              @click="getDictoryList(item)"
-            >
+              @click="getDictoryList(item)">
               <td>
                 <img
                   src="/src/assets/fileType/directory.svg"
                   alt=""
                   width="25px"
                   height="25px"
-                  class="file-pic"
-                />
+                  class="file-pic" />
                 <span class="filename">{{ item }}</span>
               </td>
             </tr>
@@ -51,6 +51,7 @@
         </template>
       </div>
 
+      <!-- 按钮组 -->
       <div class="card-footer">
         <ElButton plain @click="hanleClose">取消</ElButton>
         <ElButton type="primary" @click="handleMoveOrCopy">
@@ -68,9 +69,7 @@
   import { reqFileList, moveOrCopyFile } from '@/api/file/fileList';
   import { ElMessage } from 'element-plus';
 
-  defineOptions({
-    name: 'MoveSelect',
-  });
+  defineOptions({ name: 'MoveSelect' });
   const props = defineProps<{
     mvOrCopyShow: boolean;
     filenameList: string[];
@@ -79,10 +78,12 @@
   }>();
 
   const route = useRoute();
-  const pathArr = ref<string[]>(['全部文件']); // 面包屑路径数组
-  const dictoryArr = ref([]); // 目录列表
+
   const emit = defineEmits(['update:mvOrCopyShow']);
 
+  // 获取可选目录
+  const pathArr = ref<string[]>(['全部文件']); // 面包屑路径数组
+  const dictoryArr = ref([]); // 目录列表
   const getDictoryList = async (item: string) => {
     const curPath = [...pathArr.value.slice(1), item].join('/');
     const result = await reqFileList(curPath);
@@ -90,14 +91,15 @@
       const formatRes = result.data.fileList.filter((f) => f.isDir).map((f) => f.name);
       dictoryArr.value = formatRes;
     }
-    if (item) {
-      pathArr.value.push(item);
-    }
+    if (item) pathArr.value.push(item);
   };
 
+  // 点击面包屑导航事件
   const handleClick = (path: string) => {
     const index = pathArr.value.indexOf(path);
-    pathArr.value = pathArr.value.slice(0, index + 1);
+    if (index > -1) {
+      pathArr.value = pathArr.value.slice(0, index + 1);
+    }
     getDictoryList('');
   };
 
@@ -125,6 +127,7 @@
     props.onSuccess();
   };
 
+  // 关闭弹窗
   const hanleClose = () => {
     emit('update:mvOrCopyShow', false);
   };

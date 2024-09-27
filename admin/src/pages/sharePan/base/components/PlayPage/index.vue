@@ -1,23 +1,30 @@
 <template>
   <div class="play-container">
     <el-card class="play-card" shadow="always">
+      <!-- close -->
       <div class="card-header">
+        <h2>{{ playInfo.name }}</h2>
         <ElIcon size="16" class="close-btn" @click="hanleClose"><CloseBold /></ElIcon>
       </div>
-      <div v-if="playInfo.type === 'video'" ref="video" style="border-radius: 10px"></div>
-      <audio v-else-if="playInfo.type === 'audio'" :src="playInfo.url" controls></audio>
-      <div v-else-if="playInfo.type === 'md'" class="md-content-container">
+
+      <!-- 内容 -->
+      <div v-if="playInfo.type === 'video'" ref="video" class="inner-wrapper"></div>
+      <audio
+        v-else-if="playInfo.type === 'audio'"
+        :src="playInfo.url"
+        controls
+        class="inner-wrapper"></audio>
+      <div v-else-if="playInfo.type === 'md'" class="md-content-container inner-wrapper">
         <div class="md-content" ref="mdHtml"></div>
       </div>
+      <!-- txt | pdf -->
       <iframe
         v-else
-        id="inlineFrameExample"
-        title="Inline Frame Example"
+        class="inner-wrapper"
+        title="preview"
         frameborder="0"
-        width="100%"
-        height="700px"
-        :src="playInfo.url"
-      ></iframe>
+        height="600"
+        :src="playInfo.url"></iframe>
     </el-card>
     <div class="panel-cover" v-show="playPageShow"></div>
   </div>
@@ -35,12 +42,11 @@
   import hljs from 'highlight.js';
   import 'highlight.js/styles/github.min.css';
 
-  defineOptions({
-    name: 'PlayPage',
-  });
+  defineOptions({ name: 'PlayPage' });
   const props = defineProps<{
     playPageShow: boolean;
     playInfo: {
+      name: string;
       url: string;
       type: string;
     };
@@ -51,9 +57,9 @@
   const mdHtml = ref<HTMLElement>(null);
 
   const md = MarkdownIt({
-    html: true, //可以识别html
-    linkify: true, //自动检测像链接的文本
-    typographer: true, //优化排版，标点
+    html: true, // 可以识别html
+    linkify: true, // 自动检测像链接的文本
+    typographer: true, // 优化排版，标点
     highlight: function (str, lang) {
       if (lang && hljs.getLanguage(lang)) {
         try {
@@ -75,7 +81,7 @@
       mdHtml.value.innerHTML = md.render(res);
     }
   };
-  initRender();
+
   const hanleClose = () => {
     emit('update:playPageShow', false);
   };
@@ -93,26 +99,28 @@
         plugins: [], // 自行定义组装插件
         // fitVideoSize: 'auto', // 视频适应方式
       });
+    } else if (mdHtml.value) {
+      initRender();
     }
   });
 </script>
 
 <style scoped lang="scss">
   .play-card {
-    width: 900px;
+    width: 60rem;
     border-radius: 10px;
+    text-align: initial;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 100;
-    text-align: initial;
 
     .card-header {
       display: flex;
-      justify-content: right;
+      justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 0.8rem;
       .close-btn {
         color: var(--ep-contextmenu-text-color);
         cursor: pointer;
@@ -121,14 +129,17 @@
         }
       }
     }
-    .md-content-container {
+
+    .inner-wrapper {
+      width: 100%;
+      max-height: calc(100vh - 9rem);
       border-radius: 10px;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px 30px 100px;
+    }
+
+    .md-content-container {
+      padding: 20px 30px;
       font-size: 14px;
       outline: 1px solid rgb(218, 216, 216);
-      max-height: calc(100vh - var(--ep-menu-horizontal-height) - 160px);
       overflow-y: auto;
 
       :deep() {

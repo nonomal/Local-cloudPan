@@ -6,15 +6,13 @@
         v-show="showMenu"
         class="context-menu"
         :style="{ left: pos.posX + 'px', top: pos.posY + 'px' }"
-        v-resize="handleSizeChange"
-      >
+        v-resize="handleSizeChange">
         <div
           v-for="item in menu"
           :key="item.label"
           :class="{ 'has-submenu': item.subMenu }"
           class="menu-item"
-          @click="handleClick(item)"
-        >
+          @click="handleClick(item)">
           <p>
             <el-icon v-if="item.icon" size="1em" style="margin-right: 7px; vertical-align: middle">
               <component :is="item.icon"></component>
@@ -28,14 +26,12 @@
                 class="menu-item"
                 :key="subItem.label"
                 v-for="subItem in item.subMenu"
-                @click="handleSubClick(item, subItem)"
-              >
+                @click="handleSubClick(item, subItem)">
                 <p>
                   <el-icon
                     v-if="subItem.icon"
-                    size="1em"
-                    style="margin-right: 7px; vertical-align: middle"
-                  >
+                    size="1rem"
+                    style="margin-right: 7px; vertical-align: middle">
                     <component :is="subItem.icon"></component>
                   </el-icon>
                   <span style="vertical-align: middle">{{ subItem.label }}</span>
@@ -49,14 +45,12 @@
   </div>
 </template>
 
-<script lang="ts">
-  export default { name: 'ContextMenu' };
-</script>
 <script setup lang="ts">
   import { ref, computed, CSSProperties } from 'vue';
   import useContextMenu from '@/composables/useContextMenu';
   import useViewPort from '@/composables/useViewport';
 
+  defineOptions({ name: 'ContextMenu' });
   type MenuItem = {
     label: string;
     icon?: string;
@@ -68,21 +62,12 @@
   }>();
   const emit = defineEmits(['select']);
 
+  // 获取菜单窗口位置
   const containerRef = ref(null);
   const w = ref(0);
   const h = ref(0);
   const { x, y, showMenu } = useContextMenu(containerRef, props.showarea || undefined);
-  const { vw, vh } = useViewPort();
-
-  const submenuStyles = computed<CSSProperties>(() => {
-    const isRowReverse = x.value > vw.value - w.value;
-    const isColReverse = y.value > vh.value - h.value;
-    return {
-      [isRowReverse ? 'left' : 'right']: 0,
-      [isColReverse ? 'bottom' : 'top']: 0,
-      transform: `translateX(${isRowReverse ? '-' : ''}100%)`,
-    };
-  });
+  const { vw, vh } = useViewPort(); // 视口宽高
   const pos = computed(() => {
     let posX = x.value;
     let posY = y.value;
@@ -96,26 +81,39 @@
     }
     return { posX, posY };
   });
-
-  // 菜单窗口size变化
+  // 响应菜单窗口size变化
   const handleSizeChange = (e) => {
     w.value = e.width;
     h.value = e.height;
   };
-  // 菜单的点击事件
+
+  // 响应菜单的点击事件
+  const closeContextMenu = () => (showMenu.value = false);
+  // 主菜单
   function handleClick(item: MenuItem) {
-    showMenu.value = false;
     // 存在子菜单时，此item的点击无效
     if (item.subMenu && item.subMenu.length > 0) {
       return;
     }
+    closeContextMenu();
     emit('select', item);
   }
-  // 副菜单的点击事件
+  // 副菜单
   function handleSubClick(item: MenuItem, subItem: MenuItem) {
-    showMenu.value = false;
     emit('select', { label: `${item.label}-${subItem.label}` });
+    closeContextMenu();
   }
+
+  // 子菜单的样式
+  const submenuStyles = computed<CSSProperties>(() => {
+    const isRowReverse = x.value > vw.value - w.value;
+    const isColReverse = y.value > vh.value - h.value;
+    return {
+      [isRowReverse ? 'left' : 'right']: 0,
+      [isColReverse ? 'bottom' : 'top']: 0,
+      transform: `translateX(${isRowReverse ? '-' : ''}100%)`,
+    };
+  });
 </script>
 
 <style scoped lang="scss">

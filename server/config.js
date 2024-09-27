@@ -2,7 +2,7 @@ const path = require('path');
 
 exports.global = {
   port: 9527,
-  publicPath: 'F://',
+  publicPath: 'F://', // 代理的磁盘或者文件夹
 };
 
 exports.single = {

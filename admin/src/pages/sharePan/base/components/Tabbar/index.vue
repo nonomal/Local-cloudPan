@@ -1,52 +1,56 @@
 <template>
   <div class="tabbar-container">
-    <!-- 面包屑导航 -->
+    <!-- 面包屑 -->
     <div class="left-breadcrumb">
       <Breadcrumb></Breadcrumb>
     </div>
-    <!-- 模式切换 -->
+
+    <!-- 右侧操作面板 -->
     <div class="rig-switchMode">
-      <el-dropdown trigger="click" @command="handleClick">
-        <span class="el-dropdown-link">
-          <el-icon size="large">
-            <List v-if="curMode === 0"></List>
-            <Menu v-else-if="curMode === 1"></Menu>
-          </el-icon>
-        </span>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item icon="List" :command="0">列表模式</el-dropdown-item>
-            <el-dropdown-item icon="Menu" :command="1">网格模式</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+      <!-- 上传 -->
+      <FileUpload v-bind="$attrs"></FileUpload>
+
+      <!-- 模式切换 -->
+      <ElButton plain @click="handleClick" tag="div" style="width: 2.7rem">
+        <el-icon :size="18">
+          <i-mynaui:grid-one v-show="curMode === 0" />
+          <i-mynaui:list v-show="curMode === 1" />
+        </el-icon>
+      </ElButton>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-  export default {
-    name: 'Tabbar',
-  };
-</script>
 <script setup lang="ts">
   import { ref } from 'vue';
   import Breadcrumb from './breadcrumb.vue';
+  import FileUpload from '../FileUpload/index.vue';
 
-  const curMode = ref(0);
-
+  defineOptions({ name: 'Tabbar' });
   const emit = defineEmits(['switchMode']);
-  const handleClick = (command: number) => {
-    curMode.value = command;
-    emit('switchMode', command);
+
+  const curMode = ref<0 | 1>(0);
+  const handleClick = () => {
+    curMode.value = curMode.value === 0 ? 1 : 0;
+    emit('switchMode', curMode.value);
   };
 </script>
 
-<style scoped>
+<style scoped lang="scss">
   .tabbar-container {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 12px;
+    .rig-switchMode {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      justify-content: space-between;
+      :deep(path) {
+        stroke-width: 2;
+      }
+    }
   }
 </style>

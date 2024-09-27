@@ -1,76 +1,55 @@
-import { ref, ComputedRef, Ref, watch } from 'vue';
-import { useResizeObserver, useScroll } from '@vueuse/core';
-import { throttle } from '@/utils/tool';
+import { ref, ComputedRef, Ref, watch, computed } from 'vue';
+import { useScroll, useElementSize } from '@vueuse/core';
 
 type Options = {
-  renderCount: number;
-  offset: ComputedRef;
   itemHeight: ComputedRef;
-  flexItemWidth?: number;
-  scrollContainerRef: Ref<HTMLElement>;
-  flexContainerRef: Ref<HTMLElement>;
+  flexItemWidth: number;
+  scrollContainerRef: Ref<HTMLElement | null>;
+  wrapper: Ref<HTMLElement | null>;
   curMode: Ref<0 | 1>;
+  overscan?: number;
 };
 
-export default function (options: Options) {
-  const {
-    renderCount,
-    offset,
-    itemHeight,
-    scrollContainerRef = null,
-    flexContainerRef = null,
-    flexItemWidth,
-    curMode,
-  } = options;
+export default function (data: Ref, options: Options) {
+  const { itemHeight, scrollContainerRef, flexItemWidth, curMode, overscan = 2, wrapper } = options;
 
   const start = ref(0);
-  const end = ref(renderCount);
-  const rowCount = ref(1);
-
-  // 计算flex容器行的最大容量
-  const computeRowCount = (eleRef) => {
-    if (eleRef === null || eleRef.value !== null) return;
-    const { stop: stopFn } = useResizeObserver(
-      eleRef,
-      throttle((entries) => {
-        const entry = entries[0];
-        const { width } = entry.contentRect;
-        rowCount.value = Math.floor(width / flexItemWidth);
-      }, 100)
-    );
-    return stopFn;
-  };
-
-  // 要渲染数据的索引
-  useScroll(scrollContainerRef, {
-    throttle: 100,
-    onScroll: (e: Event) => {
-      const scollTop = (e.target as HTMLElement).scrollTop;
-      const y = scollTop - offset.value >= 0 ? scollTop - offset.value : 0;
-      start.value = Math.floor(y / itemHeight.value) * rowCount.value;
-      end.value = start.value + renderCount;
-    },
-  });
-
-  let stopFn = null;
-  watch(
-    () => curMode.value,
-    (mode) => {
-      start.value = 0;
-      end.value = renderCount;
-      if (mode === 1) {
-        stopFn = computeRowCount(flexContainerRef);
-      } else {
-        rowCount.value = 1;
-        stopFn && stopFn();
-      }
-    },
-    { immediate: true }
+  const end = ref(10);
+  const { width, height } = useElementSize(scrollContainerRef);
+  // 每一行的最大容量
+  const rowCount = computed(() =>
+    curMode.value === 0 ? 1 : Math.floor(width.value / flexItemWidth)
   );
+  const currentList = ref([]);
+  const totalHeight = computed(
+    () => Math.ceil(data.value.length / rowCount.value) * itemHeight.value
+  );
+  const offsetTop = computed(() => Math.floor(start.value / rowCount.value) * itemHeight.value);
+
+  // 计算开始结束索引及当前应该渲染的列表
+  function calculateRange() {
+    const element = scrollContainerRef.value;
+    if (element) {
+      const offset = Math.floor(element.scrollTop / itemHeight.value) * rowCount.value;
+      const viewCapacity = Math.ceil(height.value / itemHeight.value) * rowCount.value;
+
+      const from = offset - overscan * rowCount.value;
+      const to = offset + viewCapacity + overscan * rowCount.value;
+      start.value = from < 0 ? 0 : from;
+      end.value = to > data.value.length ? data.value.length : to;
+      currentList.value = data.value.slice(start.value, end.value);
+      Object.assign(wrapper.value.style, {
+        width: '100%',
+        height: `${totalHeight.value - offsetTop.value}px`,
+        marginTop: `${offsetTop.value}px`,
+      });
+    }
+  }
+
+  useScroll(scrollContainerRef, { throttle: 200, onScroll: calculateRange });
+  watch([width, height, data, () => data.value.length], calculateRange, { flush: 'post' });
 
   return {
-    start,
-    end,
-    rowCount,
+    list: currentList,
   };
 }

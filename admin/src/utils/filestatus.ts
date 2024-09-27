@@ -1,6 +1,6 @@
 const fileTypes = {
   picture: ['jpeg', 'jpg', 'jfif', 'png', 'bmp', 'svg', 'gif', 'webp'],
-  document: ['pdf', 'txt', 'ppt', 'docx', 'doc', 'xlsx', 'xls', 'md'],
+  document: ['pdf', 'txt', 'ppt', 'pptx', 'docx', 'doc', 'xlsx', 'xls', 'md'],
   audio: ['mpeg', 'rm', 'ram', 'swf', 'mp3', 'wma'],
   video: ['mp4', 'mkv', 'rmvb', 'wmv', 'avi', 'flv', 'mov', 'm4v', 'mpg'],
   compression: ['7z', 'gzip', 'tar', 'zip', 'rar'],

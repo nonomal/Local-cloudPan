@@ -1,10 +1,12 @@
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import { defineConfig, loadEnv } from 'vite';
 
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
+import Icons from 'unplugin-icons/vite';
+import IconsResolver from 'unplugin-icons/resolver';
 
 import { viteMockServe } from 'vite-plugin-mock';
 
@@ -18,6 +20,7 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     css: {
+      // css预处理器
       preprocessorOptions: {
         scss: {
           // 用于为每个样式内容注入额外代码
@@ -31,12 +34,17 @@ export default defineConfig(({ command, mode }) => {
         resolvers: [ElementPlusResolver()],
       }),
       Components({
+        // ui库解析器
         resolvers: [
           ElementPlusResolver({
             importStyle: 'sass',
           }),
+          IconsResolver(),
         ],
         dts: path.resolve('./src', 'typings', 'components.d.ts'),
+      }),
+      Icons({
+        autoInstall: true,
       }),
       // mock配置
       viteMockServe({
@@ -49,7 +57,7 @@ export default defineConfig(({ command, mode }) => {
       port: 8888,
       proxy: {
         '/api': {
-          //获取数据的服务器地址设置
+          // 获取数据的服务器地址设置
           target: 'http://127.0.0.1:9527',
           //需要代理跨域
           changeOrigin: true,

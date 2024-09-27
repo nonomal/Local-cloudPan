@@ -10,11 +10,11 @@ const router = require('koa-router')();
 const { sortByName, sortBySize, sortByModified } = require('./utils');
 const upload = multer({
   storage: multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: function (req, _, cb) {
       const uploadPath = path.join(config.global.publicPath, req.body.path);
       cb(null, uploadPath);
     },
-    filename: function (req, file, cb) {
+    filename: function (_, file, cb) {
       // 解决中文乱码问题
       const filename = Buffer.from(file.originalname, 'latin1').toString('utf-8');
       cb(null, filename);
@@ -41,7 +41,6 @@ router.post('/upload', upload.single(config.single.fieldName), async (ctx) => {
 // 文件下载
 router.get('/download', async (ctx) => {
   try {
-    const fs = require('fs');
     let { filenameList: fList, path: reqPath } = ctx.request.query;
     fList = fList.slice(1, -1).split(',');
     reqPath = path.join(config.global.publicPath, reqPath);
@@ -52,39 +51,46 @@ router.get('/download', async (ctx) => {
     }
     const isDir = (filename) => fs.statSync(path.join(reqPath, filename)).isDirectory();
     // 是否需要进行压缩下载
-    const shouldCompress = fList.length > 1 || fList.some((f) => isDir(f));
+    const shouldCompress = fList.length > 1 || isDir(fList[0]);
     if (shouldCompress) {
       ctx.status = 200; // http状态码设为200
-      ctx.attachment('download.zip'); // 设定响应头，告知客户端它将会接收到一个可以保存的文件
+      ctx.attachment(`${fList[0]} 等文件.zip`); // 设定响应头，告知客户端它将会接收到一个可以保存的文件
 
       // Node.js的管道实现边压缩边传输
       const archive = archiver('zip', {
         zlib: { level: 9 }, // 设置压缩级别
       });
       archive.on('error', function (err) {
-        throw err;
+        console.log(err);
+        ctx.throw(500, 'Internal Server Error');
       });
 
       // 从Koa的响应对象的res中获取可写流，将其作为pipe的目标
       archive.pipe(ctx.res);
 
       // 添加文件或目录到压缩包
-      for (const filename of fList) {
-        const filepath = path.join(reqPath, filename);
-        if (isDir(filename)) {
-          archive.directory(filepath, false);
-        } else {
-          archive.file(filepath, { name: filename });
+      try {
+        for (const filename of fList) {
+          const filepath = path.join(reqPath, filename);
+          if (isDir(filename)) {
+            archive.directory(filepath, { name: filename });
+          } else {
+            // 可以在这里添加文件大小检查
+            archive.file(filepath, { name: filename });
+          }
         }
+        // 完成压缩文件的添加
+        await archive.finalize();
+      } catch (error) {
+        console.error('Error during archiving:', error);
+        ctx.throw(500, 'Internal Server Error');
       }
-
-      // 完成压缩文件的添加
-      await archive.finalize();
     }
     // 执行单个文件的下载
     else {
-      ctx.attachment(fList[0]);
       ctx.res.status = 200;
+      ctx.attachment(fList[0]);
+      ctx.length = fs.statSync(path.join(reqPath, fList[0])).size;
       await send(ctx, fList[0], { root: reqPath });
     }
   } catch (error) {
@@ -238,7 +244,7 @@ router.get('/thumbnail/:path*', async (ctx) => {
     const image = sharp(imagePath, { animated: true });
     // 读取原始图片的元数据
     const { format, width } = await image.metadata();
-    const processImage = image.rotate().resize(Math.round(width / 4));
+    const processImage = image.rotate().resize(Math.round(width / 6));
     if (format === 'gif') {
       ctx.body = await processImage.gif().toBuffer();
     } else {

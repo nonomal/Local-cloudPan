@@ -1,4 +1,5 @@
 const Koa = require('koa');
+const logger = require('koa-logger');
 const cors = require('@koa/cors'); // 跨域
 const { bodyParser } = require('@koa/bodyparser'); // 请求正文解析
 const static = require('koa-static'); // 静态文件服务
@@ -8,8 +9,10 @@ const config = require('./config');
 
 const app = new Koa();
 
-app.use(cors());
+app.use(logger());
+app.use(cors({ maxAge: 7200 }));
 app.use(bodyParser({ jsonLimit: '50mb' }));
+// 协商缓存设置304
 app.use(async (ctx, next) => {
   await next();
   if (ctx.fresh) {
