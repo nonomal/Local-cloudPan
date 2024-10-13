@@ -128,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, shallowRef, watch, computed, nextTick, onMounted } from 'vue';
+  import { ref, watch, computed, nextTick, onMounted } from 'vue';
   import { reqFileList, delteFile, renameFile, createDir } from '@/api/file/fileList';
   import { getAssetsFile } from '@/utils/tool';
   import { formatFile } from '@/api/file/types';
@@ -150,7 +150,7 @@
   const selectedFiles = ref<formatFile[]>([]); // 已勾选的文件
 
   // #region 虚拟列表
-  const allDate = shallowRef([]);
+  const allDate = ref([]);
   const tableRef = ref<InstanceType<typeof ElTable>>(null);
   const gridScrollContainerRef = ref<InstanceType<typeof ElScrollbar>>(null);
   const gridViewWrapper = ref<HTMLElement | null>(null);
