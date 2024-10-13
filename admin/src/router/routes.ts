@@ -13,27 +13,22 @@ export const constantRoute: RouteRecordRaw[] = [
     //登录成功以后展示数据的路由
     path: '/',
     component: Layout,
-    name: 'layout',
     redirect: '/home',
     children: [
       {
         path: '/home',
+        name: 'home',
         component: () => import('@/pages/home/index.vue'),
       },
-    ],
-  },
-  {
-    path: '/sharePan',
-    component: Layout,
-    redirect: '/sharePan/base?path=',
-    name: 'sharePan',
-    meta: { title: '云盘' },
-    children: [
       {
-        path: 'base',
-        name: 'sharePanBase',
+        path: '/sharePan',
+        name: 'sharePan',
         component: () => import('@/pages/sharePan/base/index.vue'),
-        meta: { title: '公共文件' },
+        beforeEnter: (to, _) => {
+          if (to.query.path === undefined) {
+            return { path: to.path, query: { ...to.query, path: '' } };
+          }
+        },
       },
     ],
   },

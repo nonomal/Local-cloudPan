@@ -29,6 +29,9 @@
             @row-click="toggleCheck"
             @row-contextmenu="(row) => toggleCheck(row, true)"
             @selection-change="handleSelectionChange">
+            <template #empty>
+              <el-empty description="暂无数据" />
+            </template>
             <el-table-column fixed type="selection" width="55" reserve-selection />
             <el-table-column prop="name" label="文件名" min-width="100">
               <template #default="{ row }">
@@ -89,14 +92,14 @@
             ref="gridScrollContainerRef"
             max-height="calc(100vh - 12rem)"
             :wrap-style="{ padding: '0 25px' }">
-            <!-- v-bind="wrapperProps" -->
-            <div class="grid-view" ref="gridViewWrapper">
+            <div class="grid-view" :class="{ empty: allDate.length === 0 }" ref="gridViewWrapper">
               <GridView
                 :file-list="list"
                 @file-click="handleClick"
                 @file-choosed="handleChoose"
                 @finish="finishRenameOrCreate"
                 @cancel="cancelRenameOrCreate" />
+              <el-empty v-if="allDate.length === 0" description="暂无数据" />
             </div>
           </el-scrollbar>
         </ContextMenu>
@@ -159,7 +162,7 @@
     wrapper,
     itemHeight, // 元素高度
     scrollContainerRef, // 滚动容器
-    flexItemWidth: 184, // 网格视图单个元素宽度
+    flexItemWidth: 160, // 网格视图单个元素宽度
     curMode, // 当前视图模式
   });
   // #endregion
@@ -540,10 +543,15 @@
       }
     }
     .grid-view {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 10rem);
       height: fit-content;
+      justify-content: space-around;
       align-content: start;
+      &.empty {
+        grid-template-columns: 1fr;
+        justify-content: center;
+      }
     }
     .pan-card-footer {
       font-size: 1rem;

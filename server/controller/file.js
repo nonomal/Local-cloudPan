@@ -1,4 +1,3 @@
-//表单形式上传单文件
 const config = require('../config');
 const multer = require('@koa/multer'); // 文件上传
 const archiver = require('archiver'); // 文件压缩
@@ -6,36 +5,39 @@ const sharp = require('sharp'); // 图片压缩
 const send = require('koa-send');
 const fs = require('fs-extra');
 const path = require('path');
-const router = require('koa-router')();
-const { sortByName, sortBySize, sortByModified } = require('./utils');
+const Router = require('@koa/router');
+const { sortByName, sortBySize, sortByModified, getNewFileName } = require('./utils');
 const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, _, cb) {
       const uploadPath = path.join(config.global.publicPath, req.body.path);
+      req.uploadPath = uploadPath;
       cb(null, uploadPath);
     },
-    filename: function (_, file, cb) {
+    filename: async function (req, file, cb) {
       // 解决中文乱码问题
       const filename = Buffer.from(file.originalname, 'latin1').toString('utf-8');
-      cb(null, filename);
+      const fullPath = path.join(req.uploadPath, filename);
+      const exist = await fs.pathExists(fullPath);
+      if (exist) {
+        const curPath = await getNewFileName(fullPath);
+        cb(null, path.basename(curPath));
+      } else {
+        cb(null, filename);
+      }
     },
   }),
   limits: undefined, // 不设置文件大小限制
 });
 
 // 文件上传
+const router = new Router();
 router.post('/upload', upload.single(config.single.fieldName), async (ctx) => {
-  try {
-    const file = ctx.request.file;
-    ctx.request.status = 200;
-    ctx.body = {
-      code: 200,
-      msg: '文件上传成功',
-    };
-  } catch (error) {
-    console.log(error);
-    ctx.response.status = 500;
-  }
+  ctx.status = 200;
+  ctx.body = {
+    code: 200,
+    msg: '文件上传成功',
+  };
 });
 
 // 文件下载
@@ -49,14 +51,16 @@ router.get('/download', async (ctx) => {
       ctx.body = { code: 200, msg: 'Filename list is required' };
       return;
     }
+    ctx.res.onerror = (err) => {
+      console.log('Error while sending file:', err);
+    };
     const isDir = (filename) => fs.statSync(path.join(reqPath, filename)).isDirectory();
     // 是否需要进行压缩下载
     const shouldCompress = fList.length > 1 || isDir(fList[0]);
     if (shouldCompress) {
-      ctx.status = 200; // http状态码设为200
-      ctx.attachment(`${fList[0]} 等文件.zip`); // 设定响应头，告知客户端它将会接收到一个可以保存的文件
+      ctx.status = 200;
+      ctx.attachment(`${fList[0]} 等文件.zip`);
 
-      // Node.js的管道实现边压缩边传输
       const archive = archiver('zip', {
         zlib: { level: 9 }, // 设置压缩级别
       });
@@ -88,14 +92,14 @@ router.get('/download', async (ctx) => {
     }
     // 执行单个文件的下载
     else {
-      ctx.res.status = 200;
       ctx.attachment(fList[0]);
       ctx.length = fs.statSync(path.join(reqPath, fList[0])).size;
       await send(ctx, fList[0], { root: reqPath });
     }
-  } catch (error) {
-    console.log(error);
-    ctx.response.status = 500;
+  } catch (err) {
+    console.log('Error while sending file:', err);
+    ctx.status = 500;
+    ctx.body = 'Internal Server Error';
   }
 });
 

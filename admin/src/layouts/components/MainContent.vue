@@ -7,9 +7,7 @@
 </template>
 
 <script setup lang="ts">
-  defineOptions({
-    name: 'MainContent',
-  });
+  defineOptions({ name: 'MainContent' });
 </script>
 
 <style scoped>

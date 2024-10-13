@@ -117,7 +117,7 @@
   .file-item {
     width: 10rem;
     padding: 10px;
-    margin: 0 1.5rem 1.5rem 0;
+    margin-bottom: 1.5rem;
     text-align: center;
     vertical-align: top;
     border-radius: 10px;

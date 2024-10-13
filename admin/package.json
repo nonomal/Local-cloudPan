@@ -20,7 +20,7 @@
     "markdown-it-emoji": "^3.0.0",
     "markdown-it-mark": "^4.0.0",
     "vue": "^3.4.15",
-    "vue-router": "^4.2.5",
+    "vue-router": "^4.4.5",
     "xgplayer": "^3.0.0-alpha.118"
   },
   "devDependencies": {
@@ -36,7 +36,7 @@
     "unplugin-auto-import": "^0.17.5",
     "unplugin-icons": "^0.19.3",
     "unplugin-vue-components": "^0.25.2",
-    "vite": "^4.4.9",
+    "vite": "^5.4.8",
     "vite-plugin-mock": "^2.9.6",
     "vite-ssg": "^0.23.1",
     "vue-tsc": "^1.8.11"

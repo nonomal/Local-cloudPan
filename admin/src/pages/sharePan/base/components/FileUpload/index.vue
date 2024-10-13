@@ -4,7 +4,7 @@
     ref="uploadRef"
     action="/api/upload"
     multiple
-    :data="{ path: route.query.path ? route.query.path : '' }"
+    :data="{ path: $route.query.path ? $route.query.path : '' }"
     :show-file-list="false"
     :before-upload="beforeUpload"
     :on-progress="showProgress"
@@ -63,6 +63,13 @@
           </template>
         </el-table-column>
         <el-table-column width="120" prop="size" label="大小" />
+        <el-table-column width="120" label="操作">
+          <template #default="{ row }">
+            <el-button type="primary" size="small" @click="cancelUpload(row)">
+              {{ row.status === 'success' ? '清除' : '取消' }}
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-card>
   </div>
@@ -73,21 +80,22 @@
 <script setup lang="ts">
   import { ref, computed } from 'vue';
   import { formatFileSize } from '@/utils/filestatus';
+  import { ElUpload } from 'element-plus';
   import type {
     UploadFile,
     UploadRawFile,
   } from 'element-plus/lib/components/upload/src/upload.d.ts';
-  import { useRoute } from 'vue-router';
-
-  defineOptions({ name: 'FileUpload' });
-  const props = defineProps({ onSuccessed: { type: Function, default: () => {} } });
 
   type UploadFileItem = Pick<UploadRawFile, 'uid' | 'name'> & {
     size: string;
     status: string;
     progress: number;
   };
-  const route = useRoute();
+  defineOptions({ name: 'FileUpload' });
+  const props = defineProps({ onSuccessed: { type: Function, default: () => {} } });
+
+  // 传输面板
+  const uploadRef = ref<InstanceType<typeof ElUpload>>(null);
   const uploadFilesList = ref<UploadFileItem[]>([]);
 
   // 上传文件or文件夹
@@ -108,11 +116,10 @@
     () => uploadFilesList.value.filter((item) => item.status === 'success').length
   );
 
-  // 控制上传列表的显示
+  // 上传列表的显示
   const showPanel = ref(false);
   const togglePanel = () => (showPanel.value = !showPanel.value);
 
-  // 传输面板
   // 上传之前收集文件信息
   const beforeUpload = (file: UploadRawFile) => {
     const { uid, name } = file;
@@ -126,13 +133,7 @@
   // 上传中收集上传进度
   const showProgress = (e, rawfile: UploadFile) => {
     const getFile = (rawfile: UploadFile) => {
-      let fileList = uploadFilesList.value;
-      let target = null;
-      fileList.every((item) => {
-        target = rawfile.uid === item.uid ? item : null;
-        return !target;
-      });
-      return target;
+      return uploadFilesList.value.find((item) => item.uid === rawfile.uid);
     };
     const file = getFile(rawfile);
     file.status = 'uploading';
@@ -147,6 +148,12 @@
       showPanel.value = false;
       props.onSuccessed();
     }
+  };
+  // 取消上传
+  const cancelUpload = (file) => {
+    uploadRef.value!.abort(file);
+    const index = uploadFilesList.value.findIndex((item) => item.uid === file.uid);
+    uploadFilesList.value.splice(index, 1);
   };
 </script>
 

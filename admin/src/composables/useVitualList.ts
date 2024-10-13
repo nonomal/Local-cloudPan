@@ -38,9 +38,11 @@ export default function (data: Ref, options: Options) {
       start.value = from < 0 ? 0 : from;
       end.value = to > data.value.length ? data.value.length : to;
       currentList.value = data.value.slice(start.value, end.value);
+      // 处理数据为空时的情况
+      const curHeight = data.value.length === 0 ? 350 : totalHeight.value - offsetTop.value;
       Object.assign(wrapper.value.style, {
         width: '100%',
-        height: `${totalHeight.value - offsetTop.value}px`,
+        height: `${curHeight}px`,
         marginTop: `${offsetTop.value}px`,
       });
     }

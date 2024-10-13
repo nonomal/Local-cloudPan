@@ -15,7 +15,6 @@
           <el-breadcrumb-item
             v-for="(path, index) in pathArr"
             :key="index"
-            :to="{ path: route.path }"
             @click="handleClick(path)">
             <span>{{ path }}</span>
           </el-breadcrumb-item>
@@ -46,9 +45,7 @@
             </tr>
           </tbody>
         </table>
-        <template v-else>
-          <el-empty :description="`移动到 ${pathArr.at(-1)} 文件夹`" />
-        </template>
+        <el-empty v-else :description="`移动到 ${pathArr.at(-1)} 文件夹`" />
       </div>
 
       <!-- 按钮组 -->
@@ -64,10 +61,9 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
+  import { ref, shallowRef } from 'vue';
   import { useRoute } from 'vue-router';
   import { reqFileList, moveOrCopyFile } from '@/api/file/fileList';
-  import { ElMessage } from 'element-plus';
 
   defineOptions({ name: 'MoveSelect' });
   const props = defineProps<{
@@ -76,14 +72,12 @@
     popoverType: 'move' | 'copy';
     onSuccess: () => void;
   }>();
-
+  const emit = defineEmits(['update:mvOrCopyShow']);
   const route = useRoute();
 
-  const emit = defineEmits(['update:mvOrCopyShow']);
-
-  // 获取可选目录
+  // #region 获取可选目录
   const pathArr = ref<string[]>(['全部文件']); // 面包屑路径数组
-  const dictoryArr = ref([]); // 目录列表
+  const dictoryArr = shallowRef([]); // 目录列表
   const getDictoryList = async (item: string) => {
     const curPath = [...pathArr.value.slice(1), item].join('/');
     const result = await reqFileList(curPath);
@@ -93,6 +87,8 @@
     }
     if (item) pathArr.value.push(item);
   };
+  getDictoryList('');
+  // #endregion
 
   // 点击面包屑导航事件
   const handleClick = (path: string) => {
@@ -128,12 +124,7 @@
   };
 
   // 关闭弹窗
-  const hanleClose = () => {
-    emit('update:mvOrCopyShow', false);
-  };
-  onMounted(() => {
-    getDictoryList('');
-  });
+  const hanleClose = () => emit('update:mvOrCopyShow', false);
 </script>
 
 <style scoped lang="scss">

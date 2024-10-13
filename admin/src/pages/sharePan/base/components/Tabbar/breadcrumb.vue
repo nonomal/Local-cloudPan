@@ -26,9 +26,5 @@
     return route.query.path === '' ? [] : (route.query.path as string).split('/');
   });
 
-  const queryParam = (index: number) => {
-    return pathArr.value.slice(0, index + 1).join('/');
-  };
+  const queryParam = (index: number) => pathArr.value.slice(0, index + 1).join('/');
 </script>
-
-<style scoped></style>

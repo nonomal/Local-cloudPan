@@ -8,7 +8,6 @@ const compress = require('koa-compress'); // gzip压缩
 const config = require('./config');
 
 const app = new Koa();
-
 app.use(logger());
 app.use(cors({ maxAge: 7200 }));
 app.use(bodyParser({ jsonLimit: '50mb' }));
@@ -25,14 +24,6 @@ app.use(compress({ threshold: 2048, br: false }));
 app.use(static(config.global.publicPath));
 app.use(require('./controller/file').routes());
 
-// 验证类型 => 验证大小 => 保存文件
-// app.use(require('./controller/upload/single').routes());
-// app.use(require('./controller/upload/base64').routes());
-// app.use(require('./controller/upload/binary').routes());
-// app.use(require('./controller/upload/multi').routes());
-// app.use(require('./controller/download').routes());
-// app.use(require('./controller/read').routes());
-
 // 处理错误
 app.on('error', (err, ctx) => {
   const { UploadError } = require('./controller/errorTypes');
@@ -43,7 +34,13 @@ app.on('error', (err, ctx) => {
     };
     ctx.status = 500;
   }
-  console.log(err);
+  if (err.code === 'ECONNRESET' || ctx.url.startsWith('/download')) {
+    console.log('  <-- 下载中断');
+  } else if (err.code === 'Parse Error' || ctx.url.startsWith('/upload')) {
+    console.log('  <-- 上传中断');
+  } else {
+    console.error('Request error:', err);
+  }
 });
 
 app.listen(config.global.port, () => {

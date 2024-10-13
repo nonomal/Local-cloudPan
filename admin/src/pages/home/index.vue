@@ -1,26 +1,15 @@
-<script setup lang="ts">
-  import { useVirtualList } from '@vueuse/core';
-
-  const allItems = Array.from(Array(99999).keys());
-
-  const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(allItems, {
-    itemHeight: 200,
-    // overscan: 0,
-  });
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <div>
-    <button @click="allItems.unshift(123123)">添加一行</button>
-    <div v-bind="containerProps" class="container">
-      <div v-bind="wrapperProps" class="wrapper">
-        <div v-for="{ index, data } in list" :key="index" class="item">
-          Row {{ index }}
-          <span opacity="70" m="l-1">({{ index }})</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- 上传文件 -->
+  <el-upload
+    ref="uploadRef"
+    action="/api/upload"
+    multiple
+    :data="{ path: $route.query.path ? $route.query.path : '' }"
+    show-file-list>
+    <el-button type="primary">上传文件</el-button>
+  </el-upload>
 </template>
 
 <style scoped>
