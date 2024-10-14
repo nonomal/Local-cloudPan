@@ -23,7 +23,7 @@ export const constantRoute: RouteRecordRaw[] = [
       {
         path: '/sharePan',
         name: 'sharePan',
-        component: () => import('@/pages/sharePan/base/index.vue'),
+        component: () => import('@/pages/sharePan/index.vue'),
         beforeEnter: (to, _) => {
           if (to.query.path === undefined) {
             return { path: to.path, query: { ...to.query, path: '' } };
