@@ -1,6 +1,12 @@
 import axios from 'axios';
 import { ElMessage } from 'element-plus';
-// import useUserStore from '@/store/modules/user'
+
+const errorCode = {
+  '401': '认证失败，无法访问系统资源',
+  '403': '当前操作没有权限',
+  '404': '访问资源不存在',
+  default: '系统未知错误，请反馈给管理员',
+};
 
 let request = axios.create({
   baseURL: './api',
@@ -15,11 +21,21 @@ request.interceptors.request.use((config) => {
   // }
   return config;
 });
+
 // 响应拦截器
 request.interceptors.response.use(
   (response) => {
-    //成功回调
-    return response.data;
+    const code = response.data.code || 200;
+    const msg = errorCode[code] || response.data.msg || errorCode['default'];
+    if (code === 201) {
+      ElMessage({
+        type: 'error',
+        message: msg,
+      });
+      return Promise.reject(msg);
+    } else {
+      return response.data;
+    }
   },
   (error) => {
     let msg = '';

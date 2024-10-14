@@ -94,6 +94,7 @@
             :wrap-style="{ padding: '0 25px' }">
             <div class="grid-view" :class="{ empty: allDate.length === 0 }" ref="gridViewWrapper">
               <GridView
+                ref="gridRef"
                 :file-list="list"
                 @file-click="handleClick"
                 @file-choosed="handleChoose"
@@ -129,7 +130,7 @@
 
 <script setup lang="ts">
   import { ref, watch, computed, nextTick, onMounted } from 'vue';
-  import { reqFileList, delteFile, renameFile, createDir } from '@/api/file/fileList';
+  import { reqFileList, delteFile, renameFile, createDir, checkFile } from '@/api/file/fileList';
   import { getAssetsFile } from '@/utils/tool';
   import { formatFile } from '@/api/file/types';
   import { ElMessage, ElMessageBox, ElScrollbar, ElTable } from 'element-plus';
@@ -148,6 +149,16 @@
   const router = useRouter();
   const route = useRoute();
   const selectedFiles = ref<formatFile[]>([]); // 已勾选的文件
+
+  // 已勾选的文件名列表
+  const filenameList = computed(() => selectedFiles.value.map((file) => file.name));
+  // 文件的下载链接
+  const fileHref = computed(() => {
+    return new URL(
+      `api/download?filenameList=[${filenameList.value}]&path=${route.query.path ? route.query.path : ''}`,
+      window.location.origin
+    ).href;
+  });
 
   // #region 虚拟列表
   const allDate = ref([]);
@@ -233,9 +244,16 @@
   const handleSelect = (MenuItem) => {
     // 菜单点击事件
     const path = route.query.path as string;
-    const handleDownload = () => {
-      downloadRef.value.click();
-      clearSelection();
+    const handleDownload = async () => {
+      try {
+        const result = await checkFile(path, filenameList.value);
+        if (result.code === 200) {
+          downloadRef.value.click();
+        }
+      } catch (error) {
+      } finally {
+        getFileList(path);
+      }
     };
     const handleDelete = () => {
       ElMessageBox.confirm('文件一经删除，无法恢复，确定删除所选的文件吗？', '确定删除', {
@@ -244,26 +262,14 @@
         type: 'warning',
       })
         .then(async () => {
-          const result = await delteFile(path, filenameList.value);
-          if (result.code !== 200) {
-            ElMessage({
-              type: 'warning',
-              message: result.msg,
-            });
-          } else {
-            ElMessage({
-              type: 'success',
-              message: '删除成功！',
-            });
-          }
-          getFileList(path);
-        })
-        .catch(() => {
+          await delteFile(path, filenameList.value);
           ElMessage({
-            type: 'info',
-            message: '删除失败',
+            type: 'success',
+            message: '删除成功！',
           });
-        });
+        })
+        .catch((err) => {})
+        .finally(() => getFileList(path));
     };
     const handleRename = () => {
       allDate.value.forEach((file) => {
@@ -304,18 +310,6 @@
     operation[MenuItem.label]();
   };
   // #endregion
-
-  // 已勾选的文件名列表
-  const filenameList = computed(() => {
-    return selectedFiles.value.map((file) => file.name);
-  });
-  // 文件的下载链接
-  const fileHref = computed(() => {
-    return new URL(
-      `api/download?filenameList=[${filenameList.value}]&path=${route.query.path ? route.query.path : ''}`,
-      window.location.origin
-    ).href;
-  });
 
   // #region 两种mode公共事件
   // 1. 文件点击
@@ -400,18 +394,22 @@
     const handleRenameFile = async () => {
       result = await renameFile(route.query.path as string, row.name, newName);
     };
-    if (row.isCreate) {
-      await handleCreateDir();
-      delete row.isCreate;
-    } else {
-      await handleRenameFile();
-    }
+    try {
+      if (row.isCreate) {
+        await handleCreateDir();
+        delete row.isCreate;
+      } else {
+        await handleRenameFile();
+      }
 
-    if (result && result.code === 200) {
-      ElMessage({
-        type: 'success',
-        message: `${operateText}成功！`,
-      });
+      if (result && result.code === 200) {
+        ElMessage({
+          type: 'success',
+          message: `${operateText}成功！`,
+        });
+      }
+    } catch (err) {
+    } finally {
       row.isRename = false;
       await getFileList(route.query.path as string);
     }
@@ -429,6 +427,13 @@
     tableRef?.value?.setScrollTop(0);
     gridScrollContainerRef?.value?.setScrollTop(0);
   };
+  // 5. 清除所有勾选状态
+  const gridRef = ref<InstanceType<typeof GridView>>(null);
+  const clearSelection = () => {
+    selectedFiles.value = [];
+    tableRef?.value?.clearSelection();
+    gridRef?.value?.clearSelection();
+  };
   // #endregion
 
   // #region 网格专属事件
@@ -442,11 +447,6 @@
   // 文件勾选
   const handleSelectionChange = (select) => {
     selectedFiles.value = select;
-  };
-  // 清除所有勾选状态
-  const clearSelection = () => {
-    selectedFiles.value = [];
-    tableRef?.value?.clearSelection();
   };
   // 切换勾选状态
   const toggleCheck = (row, isSingle?: boolean) => {

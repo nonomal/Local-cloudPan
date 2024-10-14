@@ -7,6 +7,7 @@ enum API {
   CREATEDIR = '/createDir',
   MOVEORCOPY = '/fileMoveOrCopy',
   DELETE = '/delete',
+  CHECKFILE = '/checkFileList',
 }
 
 /** 获取文件列表 */
@@ -54,6 +55,15 @@ export const moveOrCopyFile = (
 /** 删除选中文件 */
 export const delteFile = (path: string = '', filenameList: string[]) => {
   return request.delete<any, ResponseData>(API.DELETE, {
+    params: {
+      path,
+      filenameList,
+    },
+  });
+};
+
+export const checkFile = (path: string = '', filenameList: string[]) => {
+  return request.get<any, ResponseData>(API.CHECKFILE, {
     params: {
       path,
       filenameList,

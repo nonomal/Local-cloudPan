@@ -102,25 +102,24 @@
   // 移动文件
   const handleMoveOrCopy = async () => {
     const destination = pathArr.value.slice(1).join('/');
-    const result = await moveOrCopyFile(
-      route.query.path as string,
-      props.filenameList,
-      destination,
-      props.popoverType
-    );
-    if (result.code !== 200) {
-      ElMessage({
-        type: 'warning',
-        message: result.msg,
-      });
-      return;
+    try {
+      const result = await moveOrCopyFile(
+        route.query.path as string,
+        props.filenameList,
+        destination,
+        props.popoverType
+      );
+      if (result.code === 200) {
+        ElMessage({
+          type: 'success',
+          message: result.msg,
+        });
+      }
+    } catch (err) {
+    } finally {
+      hanleClose();
+      props.onSuccess();
     }
-    hanleClose();
-    ElMessage({
-      type: 'success',
-      message: result.msg,
-    });
-    props.onSuccess();
   };
 
   // 关闭弹窗

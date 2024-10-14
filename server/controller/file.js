@@ -41,16 +41,34 @@ router.post('/upload', upload.single(config.single.fieldName), async (ctx) => {
 });
 
 // 文件下载
+router.get('/checkFileList', async (ctx) => {
+  try {
+    let { 'filenameList[]': fList, path: reqPath } = ctx.request.query;
+    fList = Array.isArray(fList) ? [...fList] : [fList];
+    reqPath = path.join(config.global.publicPath, reqPath);
+    if (!fList || fList.length === 0) {
+      ctx.body = { code: 201, msg: 'Filename list is required' };
+      return;
+    }
+    const filePathList = fList.map((filename) => path.join(reqPath, filename));
+    const existenceChecks = filePathList.map((filePath) => fs.pathExists(filePath));
+    const existenceResults = await Promise.all(existenceChecks);
+    const missingFiles = fList.filter((_, index) => !existenceResults[index]);
+    if (missingFiles.length > 0) {
+      ctx.body = { code: 201, msg: `${missingFiles.join(', ')} 文件不存在！本次操作无效！` };
+      return;
+    } else {
+      ctx.body = { code: 200, msg: 'ok' };
+    }
+  } catch (error) {
+    ctx.status = 500;
+  }
+});
 router.get('/download', async (ctx) => {
   try {
     let { filenameList: fList, path: reqPath } = ctx.request.query;
     fList = fList.slice(1, -1).split(',');
     reqPath = path.join(config.global.publicPath, reqPath);
-    // 文件名列表为空
-    if (!fList || fList.length === 0) {
-      ctx.body = { code: 200, msg: 'Filename list is required' };
-      return;
-    }
     ctx.res.onerror = (err) => {
       console.log('Error while sending file:', err);
     };
@@ -99,7 +117,6 @@ router.get('/download', async (ctx) => {
   } catch (err) {
     console.log('Error while sending file:', err);
     ctx.status = 500;
-    ctx.body = 'Internal Server Error';
   }
 });
 
@@ -168,16 +185,22 @@ router.delete('/delete', async (ctx) => {
   try {
     let { 'filenameList[]': fList, path: reqPath } = ctx.request.query;
     reqPath = path.join(config.global.publicPath, reqPath);
-    fList = Array.isArray(fList) ? fList : [fList];
+    fList = Array.isArray(fList) ? [...fList] : [fList];
     if (!fList || fList.length === 0) {
       ctx.body = { code: 201, msg: '请先选择文件！' };
       return;
     }
-    for (const filename of fList) {
-      const filePath = path.join(reqPath, filename);
-      await fs.remove(filePath);
-    }
+    const filePathList = fList.map((filename) => path.join(reqPath, filename));
+    const existenceChecks = filePathList.map((filePath) => fs.pathExists(filePath));
+    const existenceResults = await Promise.all(existenceChecks);
 
+    const missingFiles = fList.filter((_, index) => !existenceResults[index]);
+    if (missingFiles.length > 0) {
+      ctx.body = { code: 201, msg: `${missingFiles.join(', ')} 文件不存在！本次操作无效！` };
+      return;
+    }
+    // 执行删除操作
+    await Promise.all(filePathList.map((filePath) => fs.remove(filePath)));
     ctx.res.status = 200;
     ctx.body = { code: 200, msg: '文件删除成功' };
   } catch (error) {
@@ -192,6 +215,11 @@ router.post('/rename', async (ctx) => {
     const { oldName, newName, path: reqPath } = ctx.request.body;
     const oldPath = path.join(config.global.publicPath, reqPath, oldName);
     const newPath = path.join(config.global.publicPath, reqPath, newName);
+    const isExist = await fs.pathExists(oldPath);
+    if (!isExist) {
+      ctx.body = { code: 201, msg: `${oldName} 文件不存在！本次操作无效！` };
+      return;
+    }
     await fs.rename(oldPath, newPath);
     ctx.res.status = 200;
     ctx.body = { code: 200, msg: '文件重命名成功' };
@@ -209,13 +237,29 @@ router.post('/fileMoveOrCopy', async (ctx) => {
     const operate = dtype === 'move' ? fs.move : fs.copy;
     const operateText = dtype === 'move' ? '移动' : '复制';
 
+    // 错误检查
     for (const file of fileList) {
       const oldPath = path.join(config.global.publicPath, reqPath, file);
       const newPath = path.join(config.global.publicPath, destination, file);
+
+      // 检查新路径是否包含旧路径
       if (newPath.includes(oldPath)) {
         ctx.body = { code: 201, msg: `不能${operateText}到自身或子目录!` };
         return;
       }
+
+      // 检查旧文件是否存在
+      const isExist = await fs.pathExists(oldPath);
+      if (!isExist) {
+        ctx.body = { code: 201, msg: `${file} 文件不存在！本次操作无效！` };
+        return;
+      }
+    }
+
+    // 执行文件移动或复制操作
+    for (const file of fileList) {
+      const oldPath = path.join(config.global.publicPath, reqPath, file);
+      const newPath = path.join(config.global.publicPath, destination, file);
       await operate(oldPath, newPath, { overwrite: true });
     }
     ctx.body = { code: 200, msg: `文件${operateText}成功` };

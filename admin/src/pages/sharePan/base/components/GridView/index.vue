@@ -111,6 +111,9 @@
       });
     }
   );
+
+  const clearSelection = () => Object.keys(checkedList).map((id) => (checkedList[id] = false));
+  defineExpose({ clearSelection });
 </script>
 
 <style lang="scss">
