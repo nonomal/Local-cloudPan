@@ -36,7 +36,7 @@
     <!-- panel -->
     <el-card v-show="showPanel" class="file-panel">
       <span class="select-text">正在上传（{{ resolvedCount }}/{{ uploadFilesList.length }}）</span>
-      <el-table :data="uploadFilesList" style="width: 100%">
+      <el-table :data="uploadFilesList" max-height="25rem">
         <el-table-column prop="name" width="150" show-overflow-tooltip label="文件名">
           <template #default="{ row }">
             <el-icon style="vertical-align: -10%">
@@ -166,6 +166,7 @@
       top: 2.3rem;
       z-index: 999;
       text-align: left;
+      // max-height: ;
       .select-text {
         font-size: 1rem;
         font-weight: 600;
