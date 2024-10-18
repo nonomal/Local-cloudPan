@@ -25,6 +25,7 @@ declare module 'vue' {
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
     ElUpload: typeof import('element-plus/es')['ElUpload']
+    'IMynaui:chartPieTwoSolid': typeof import('~icons/mynaui/chart-pie-two-solid')['default']
     'IMynaui:chatMessages': typeof import('~icons/mynaui/chat-messages')['default']
     'IMynaui:checkCircle': typeof import('~icons/mynaui/check-circle')['default']
     'IMynaui:cog': typeof import('~icons/mynaui/cog')['default']

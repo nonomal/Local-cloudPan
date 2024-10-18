@@ -1,6 +1,12 @@
 export interface ResponseData {
   code: number;
   msg?: string;
+  needs?: string[];
+}
+
+export interface verifyData {
+  code: number;
+  shouldUpload: string[];
 }
 
 export interface File {

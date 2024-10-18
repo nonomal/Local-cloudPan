@@ -1,5 +1,5 @@
 import request from '@/utils/request';
-import type { FileResponseData, ResponseData } from './types';
+import type { FileResponseData, ResponseData, verifyData } from './types';
 
 enum API {
   FILELIST = '/filelist',
@@ -8,6 +8,9 @@ enum API {
   MOVEORCOPY = '/fileMoveOrCopy',
   DELETE = '/delete',
   CHECKFILE = '/checkFileList',
+  VERIFY = '/verify',
+  UPLOAD = '/upload',
+  MERGE = '/merge',
 }
 
 /** 获取文件列表 */
@@ -69,4 +72,29 @@ export const checkFile = (path: string = '', filenameList: string[]) => {
       filenameList,
     },
   });
+};
+
+export const verify = (fileName, fileId, chunks) => {
+  chunks = chunks.map((chunk) => ({ chunkId: chunk.chunkId, index: chunk.index }));
+  return request.post<any, verifyData>(API.VERIFY, { fileName, fileId, chunks });
+};
+
+export const uploadChunk = (fileId, chunk) => {
+  const formData = new FormData();
+  formData.append('fileId', fileId);
+  formData.append('index', chunk.index);
+  formData.append('chunkId', chunk.chunkId);
+  formData.append('chunkData', chunk.blob);
+  return request.post<any, ResponseData>(API.UPLOAD, formData);
+};
+
+export const mergeChunks = async (fileId, path) => {
+  const { code, msg, needs } = await request.post<any, ResponseData>(API.MERGE, { fileId, path });
+  if (code === 200) {
+    console.log(msg);
+    return [];
+  } else if (code === 202) {
+    console.log(msg);
+    return needs;
+  }
 };

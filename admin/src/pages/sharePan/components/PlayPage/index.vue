@@ -60,6 +60,7 @@
     html: true, // 可以识别html
     linkify: true, // 自动检测像链接的文本
     typographer: true, // 优化排版，标点
+    // 代码着色
     highlight: function (str, lang) {
       if (lang && hljs.getLanguage(lang)) {
         try {
@@ -82,9 +83,7 @@
     }
   };
 
-  const hanleClose = () => {
-    emit('update:playPageShow', false);
-  };
+  const hanleClose = () => emit('update:playPageShow', false);
   onMounted(() => {
     if (video.value) {
       new Player({
@@ -176,7 +175,7 @@
         }
         pre .hljs {
           border-radius: 10px;
-          background: #eceaea;
+          background: #f9f5f5;
         }
         ol li {
           padding-left: 0.5rem;

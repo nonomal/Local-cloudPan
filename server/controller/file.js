@@ -7,37 +7,114 @@ const fs = require('fs-extra');
 const path = require('path');
 const Router = require('@koa/router');
 const { sortByName, sortBySize, sortByModified, getNewFileName } = require('./utils');
+const router = new Router();
+
+// 创建上传中需要的文件夹
+const chunkDir = path.join(__dirname, './chunktemp');
+const fileInfoDir = path.join(__dirname, './filetemp');
+[chunkDir, fileInfoDir].forEach((dir) => {
+  fs.ensureDirSync(dir);
+});
+// 文件上传
 const upload = multer({
   storage: multer.diskStorage({
     destination: function (req, _, cb) {
-      const uploadPath = path.join(config.global.publicPath, req.body.path);
-      req.uploadPath = uploadPath;
-      cb(null, uploadPath);
+      const fileDir = path.join(chunkDir, req.body.fileId);
+      fs.ensureDirSync(fileDir);
+      cb(null, fileDir);
     },
-    filename: async function (req, file, cb) {
-      // 解决中文乱码问题
-      const filename = Buffer.from(file.originalname, 'latin1').toString('utf-8');
-      const fullPath = path.join(req.uploadPath, filename);
-      const exist = await fs.pathExists(fullPath);
-      if (exist) {
-        const curPath = await getNewFileName(fullPath);
-        cb(null, path.basename(curPath));
-      } else {
-        cb(null, filename);
-      }
+    filename: function (req, _, cb) {
+      const { index, chunkId } = req.body;
+      cb(null, index + '-' + chunkId);
     },
   }),
   limits: undefined, // 不设置文件大小限制
 });
-
-// 文件上传
-const router = new Router();
-router.post('/upload', upload.single(config.single.fieldName), async (ctx) => {
+router.post('/upload', upload.any(), async (ctx) => {
   ctx.status = 200;
   ctx.body = {
     code: 200,
-    msg: '文件上传成功',
+    msg: '分片上传成功',
   };
+});
+router.post('/verify', async (ctx) => {
+  const { fileId, fileName, chunks } = ctx.request.body;
+  const fileInfoPath = path.join(fileInfoDir, fileId);
+  const isExist = await fs.pathExists(fileInfoPath);
+  if (!isExist) {
+    const fileInfo = {
+      id: fileId,
+      name: fileName,
+      chunks,
+      chunksCount: chunks.length,
+    };
+    fs.writeFileSync(fileInfoPath, JSON.stringify(fileInfo));
+    const chunkHashList = chunks.map((chunk) => chunk.chunkId);
+    ctx.status = 200;
+    ctx.body = { code: 200, shouldUpload: chunkHashList };
+  } else {
+    const chunkList = path.join(chunkDir, fileId);
+    if (!fs.pathExists(chunkList)) {
+      const chunkHashList = chunks.map((chunk) => chunk.chunkId);
+      ctx.status = 200;
+      ctx.body = { code: 200, shouldUpload: chunkHashList };
+    }
+    const chunkFiles = await fs.readdir(chunkList);
+    const chunkHashList = chunkFiles.map((file) => file.split('-')[1]);
+    const shouldUpload = chunks
+      .filter((chunk) => !chunkHashList.includes(chunk.chunkId))
+      .map((chunk) => chunk.chunkId);
+    ctx.status = 200;
+    ctx.body = { code: 200, shouldUpload };
+  }
+});
+router.post('/merge', async (ctx) => {
+  try {
+    const { fileId, path: reqPath } = ctx.request.body;
+    // 1. 获取文件信息
+    const fileInfoPath = path.join(fileInfoDir, fileId);
+    const fileInfo = JSON.parse(fs.readFileSync(fileInfoPath));
+    const { name: fileName, chunks, chunksCount } = fileInfo;
+
+    // 2. chunkList排序
+    const chunkList = path.join(chunkDir, fileId);
+    const chunkFiles = await fs.readdir(chunkList);
+    if (chunkFiles.length !== chunksCount) {
+      const chunkHashList = chunkFiles.map((file) => file.split('-')[1]);
+      const needs = chunks
+        .filter((chunk) => !chunkHashList.includes(chunk.chunkId))
+        .map((chunk) => chunk.chunkId);
+      ctx.status = 200;
+      ctx.body = { code: 202, msg: '分片数量不一致', needs };
+      return;
+    }
+    chunkFiles.sort((a, b) => parseInt(a.split('-')[0]) - parseInt(b.split('-')[0]));
+
+    // 3. 合并文件
+    const uploadPath = path.join(config.global.publicPath, reqPath);
+    fs.ensureDirSync(uploadPath);
+    let filePath = path.join(uploadPath, fileName); // 文件上传路径path
+    // 已存在的情况重命名
+    const exist = await fs.pathExists(filePath);
+    if (exist) {
+      filePath = await getNewFileName(filePath);
+    }
+    const writeStream = fs.createWriteStream(filePath, { flags: 'a' });
+    for (const chunkFile of chunkFiles) {
+      const chunkPath = path.join(chunkList, chunkFile);
+      const buffer = fs.readFileSync(chunkPath);
+      writeStream.write(buffer);
+    }
+    writeStream.end();
+
+    // 4. 删除文件信息和分片
+    fs.remove(fileInfoPath);
+    fs.remove(chunkList);
+    ctx.status = 200;
+    ctx.body = { code: 200, msg: '文件上传成功' };
+  } catch (error) {
+    ctx.status = 500;
+  }
 });
 
 // 文件下载
