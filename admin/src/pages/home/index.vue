@@ -1,15 +1,9 @@
 <script setup lang="ts"></script>
 
 <template>
-  <!-- 上传文件 -->
-  <el-upload
-    ref="uploadRef"
-    action="/api/upload"
-    multiple
-    :data="{ path: $route.query.path ? $route.query.path : '' }"
-    show-file-list>
-    <el-button type="primary">上传文件</el-button>
-  </el-upload>
+  <h2>公告</h2>
+  <h2>指定消息</h2>
+  <h2>Dashboards</h2>
 </template>
 
 <style scoped>

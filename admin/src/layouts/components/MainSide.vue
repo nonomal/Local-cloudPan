@@ -9,7 +9,7 @@
         <el-icon :size="24"><i-mynaui:folder-two /></el-icon>
         <template #title>网盘</template>
       </el-menu-item>
-      <el-menu-item index="3">
+      <el-menu-item index="/chat">
         <el-icon :size="24"><i-mynaui:chat-messages /></el-icon>
         <template #title>聊天</template>
       </el-menu-item>

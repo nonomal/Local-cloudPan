@@ -28,6 +28,7 @@ declare module 'vue' {
     'IMynaui:chartPieTwoSolid': typeof import('~icons/mynaui/chart-pie-two-solid')['default']
     'IMynaui:chatMessages': typeof import('~icons/mynaui/chat-messages')['default']
     'IMynaui:checkCircle': typeof import('~icons/mynaui/check-circle')['default']
+    'IMynaui:clockFourSolid': typeof import('~icons/mynaui/clock-four-solid')['default']
     'IMynaui:cog': typeof import('~icons/mynaui/cog')['default']
     'IMynaui:dazeCircle': typeof import('~icons/mynaui/daze-circle')['default']
     'IMynaui:file': typeof import('~icons/mynaui/file')['default']
