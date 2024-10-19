@@ -55,6 +55,7 @@
 <script setup lang="ts">
   import { ref, reactive, watch } from 'vue';
   import { getAssetsFile } from '@/utils/tool';
+  import { Select, CloseBold } from '@element-plus/icons-vue';
   import type { formatFile } from '@/api/file/types';
   import { useRoute } from 'vue-router';
 
