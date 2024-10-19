@@ -1,5 +1,5 @@
 <template>
-  <el-breadcrumb separator-icon="ArrowRight">
+  <el-breadcrumb :separator-icon="ArrowRight">
     <el-breadcrumb-item :to="{ path: route.path, query: { path: '' } }">
       <span class="breadcrumb-title">全部文件</span>
     </el-breadcrumb-item>
@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+  import { ArrowRight } from '@element-plus/icons-vue';
   import { computed } from 'vue';
   import { useRoute } from 'vue-router';
 

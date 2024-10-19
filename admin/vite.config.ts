@@ -7,6 +7,7 @@ import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
+import { analyzer } from 'vite-bundle-analyzer';
 
 import { viteMockServe } from 'vite-plugin-mock';
 
@@ -30,9 +31,12 @@ export default defineConfig(({ command, mode }) => {
     },
     plugins: [
       vue(),
+      analyzer(),
+      // 自动导入js、ts
       AutoImport({
         resolvers: [ElementPlusResolver()],
       }),
+      // 自动导入组件
       Components({
         // ui库解析器
         resolvers: [

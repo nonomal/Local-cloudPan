@@ -14,9 +14,11 @@
           class="menu-item"
           @click="handleClick(item)">
           <p>
-            <el-icon v-if="item.icon" size="1em" style="margin-right: 7px; vertical-align: middle">
-              <component :is="item.icon"></component>
-            </el-icon>
+            <Icon
+              v-if="item.icon"
+              :icon="item.icon"
+              width="1rem"
+              style="margin-right: 7px; vertical-align: middle" />
             <span style="vertical-align: middle">{{ item.label }}</span>
           </p>
           <!-- 子菜单 -->
@@ -28,12 +30,11 @@
                 v-for="subItem in item.subMenu"
                 @click="handleSubClick(item, subItem)">
                 <p>
-                  <el-icon
+                  <Icon
                     v-if="subItem.icon"
-                    size="1rem"
-                    style="margin-right: 7px; vertical-align: middle">
-                    <component :is="subItem.icon"></component>
-                  </el-icon>
+                    :icon="subItem.icon"
+                    width="1rem"
+                    style="margin-right: 7px; vertical-align: middle" />
                   <span style="vertical-align: middle">{{ subItem.label }}</span>
                 </p>
               </div>
@@ -49,6 +50,7 @@
   import { ref, computed, CSSProperties } from 'vue';
   import useContextMenu from '@/composables/useContextMenu';
   import useViewPort from '@/composables/useViewport';
+  import { Icon } from '@iconify/vue';
 
   defineOptions({ name: 'ContextMenu' });
   type MenuItem = {

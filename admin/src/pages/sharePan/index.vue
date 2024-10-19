@@ -145,6 +145,8 @@
   import PlayPage from './components/PlayPage/index.vue';
   import GridView from './components/GridView/index.vue';
 
+  import { Select, CloseBold } from '@element-plus/icons-vue';
+
   defineOptions({ name: 'sharePan' });
   const router = useRouter();
   const route = useRoute();
@@ -227,14 +229,14 @@
   ];
   const fileMenu = computed(() => {
     const baseMenu = [
-      { label: '下载', icon: 'Download' },
-      { label: '复制', icon: 'CopyDocument' },
-      { label: '移动', icon: 'Rank' },
-      { label: '删除', icon: 'Delete' },
+      { label: '下载', icon: 'mynaui:download' },
+      { label: '复制', icon: 'mynaui:copy' },
+      { label: '移动', icon: 'mynaui:move' },
+      { label: '删除', icon: 'mynaui:delete' },
     ];
     return selectedFiles.value.length > 1
       ? baseMenu
-      : [...baseMenu, { label: '重命名', icon: 'Edit' }];
+      : [...baseMenu, { label: '重命名', icon: 'mynaui:edit-one' }];
   });
   const mvOrCopyShow = ref(false);
   const playPageShow = ref(false);

@@ -35,6 +35,7 @@
   import 'xgplayer/dist/xgplayer.min.css';
   import { onMounted, ref } from 'vue';
   import request from '@/utils/request';
+  import { CloseBold } from '@element-plus/icons-vue';
 
   import MarkdownIt from 'markdown-it';
   import { full as emoji } from 'markdown-it-emoji';

@@ -38,9 +38,9 @@
         <el-table-column label="当前状态" width="200">
           <template #default="{ row }">
             <template v-if="[0, 1].includes(row.status)">
-              <!-- <el-icon style="vertical-align: middle">
-                <i-mynaui:chart-pie-two-solid />
-              </el-icon> -->
+              <el-icon class="is-loading">
+                <Loading />
+              </el-icon>
               {{ row.status === 0 ? '等待处理' : '正在解析中' }}
             </template>
             <el-progress v-else-if="[2, 3].includes(row.status)" :percentage="row.percent" />
@@ -86,6 +86,7 @@
 
 <script setup lang="ts">
   import { ref, computed, shallowReactive } from 'vue';
+  import { Sort, Loading } from '@element-plus/icons-vue';
   import { useRoute } from 'vue-router';
   import { formatFileSize } from '@/utils/filestatus';
   import { verify, uploadChunk, mergeChunks } from '@/api/file/fileList';

@@ -63,6 +63,7 @@
 <script setup lang="ts">
   import { ref, shallowRef } from 'vue';
   import { useRoute } from 'vue-router';
+  import { CloseBold } from '@element-plus/icons-vue';
   import { reqFileList, moveOrCopyFile } from '@/api/file/fileList';
 
   defineOptions({ name: 'MoveSelect' });
