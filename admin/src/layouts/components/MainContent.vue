@@ -1,8 +1,6 @@
 <template>
   <RouterView v-slot="{ Component }">
-    <Transition name="fade" mode="out-in">
-      <component :is="Component"></component>
-    </Transition>
+    <component :is="Component"></component>
   </RouterView>
 </template>
 
