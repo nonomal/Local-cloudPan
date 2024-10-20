@@ -6,6 +6,7 @@
     "mock": "vite --mode mock --force",
     "dev": "vite --host",
     "build": "vite build",
+    "analyze": "vite build --mode analyze",
     "generate": "vite-ssg build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit"

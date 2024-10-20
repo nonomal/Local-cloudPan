@@ -31,7 +31,7 @@ export default defineConfig(({ command, mode }) => {
     },
     plugins: [
       vue(),
-      analyzer(),
+      mode === 'analyze' ? analyzer() : undefined,
       // 自动导入js、ts
       AutoImport({
         resolvers: [ElementPlusResolver()],

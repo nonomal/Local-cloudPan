@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, watch, computed, nextTick, onMounted } from 'vue';
+  import { ref, watch, computed, nextTick, onMounted, defineAsyncComponent } from 'vue';
   import { reqFileList, delteFile, renameFile, createDir, checkFile } from '@/api/file/fileList';
   import { getAssetsFile } from '@/utils/tool';
   import { formatFile } from '@/api/file/types';
@@ -141,11 +141,11 @@
 
   import ContextMenu from '@/components/ContextMenu/index.vue';
   import Tabbar from './components/Tabbar/index.vue';
-  import MoveSelect from './components/MoveSelect/index.vue';
-  import PlayPage from './components/PlayPage/index.vue';
-  import GridView from './components/GridView/index.vue';
 
   import { Select, CloseBold } from '@element-plus/icons-vue';
+  const GridView = defineAsyncComponent(() => import('./components/GridView/index.vue'));
+  const PlayPage = defineAsyncComponent(() => import('./components/PlayPage/index.vue'));
+  const MoveSelect = defineAsyncComponent(() => import('./components/MoveSelect/index.vue'));
 
   defineOptions({ name: 'sharePan' });
   const router = useRouter();
@@ -483,7 +483,7 @@
   const getScrollContainer = () => {
     if (curMode.value === 0) {
       // @ts-ignore
-      scrollContainerRef.value = tableRef.value.$refs.scrollBarRef.wrapRef;
+      scrollContainerRef.value = tableRef.value?.$refs.scrollBarRef.wrapRef;
       wrapper.value = (scrollContainerRef.value as HTMLElement).querySelector(
         '.ep-scrollbar__view'
       );

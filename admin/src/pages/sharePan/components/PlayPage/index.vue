@@ -31,8 +31,6 @@
 </template>
 
 <script setup lang="ts">
-  import Player from 'xgplayer';
-  import 'xgplayer/dist/xgplayer.min.css';
   import { onMounted, ref } from 'vue';
   import request from '@/utils/request';
   import { CloseBold } from '@element-plus/icons-vue';
@@ -40,8 +38,6 @@
   import MarkdownIt from 'markdown-it';
   import { full as emoji } from 'markdown-it-emoji';
   import Mark from 'markdown-it-mark';
-  import hljs from 'highlight.js';
-  import 'highlight.js/styles/github.min.css';
 
   defineOptions({ name: 'PlayPage' });
   const props = defineProps<{
@@ -63,10 +59,12 @@
     typographer: true, // 优化排版，标点
     // 代码着色
     highlight: function (str, lang) {
+      // @ts-ignore
       if (lang && hljs.getLanguage(lang)) {
         try {
           return (
             '<pre><code class="hljs">' +
+            // @ts-ignore
             hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
             '</code></pre>'
           );
@@ -87,7 +85,8 @@
   const hanleClose = () => emit('update:playPageShow', false);
   onMounted(() => {
     if (video.value) {
-      new Player({
+      // @ts-ignore
+      const player = new Player({
         el: video.value,
         url: props.playInfo.url,
         width: '100%',
@@ -97,7 +96,6 @@
         pip: true, // 是否开启画中画
         lang: 'zh-cn', // 语言
         plugins: [], // 自行定义组装插件
-        // fitVideoSize: 'auto', // 视频适应方式
       });
     } else if (mdHtml.value) {
       initRender();
