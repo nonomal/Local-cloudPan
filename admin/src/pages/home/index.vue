@@ -1,9 +1,11 @@
 <script setup lang="ts"></script>
 
 <template>
-  <h2>公告</h2>
-  <h2>指定消息</h2>
-  <h2>Dashboards</h2>
+  <div>
+    <h2>公告</h2>
+    <h2>指定消息</h2>
+    <h2>Dashboards</h2>
+  </div>
 </template>
 
 <style scoped>
