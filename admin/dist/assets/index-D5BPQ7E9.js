@@ -1,1 +1,0 @@
-import{an as e,o as t,c as n,b as a}from"./index-B5pPcsYu.js";const o=a("h1",null,"chat界面",-1),c=[o],d=e({name:"chat",__name:"index",setup(s){return(_,r)=>(t(),n("div",null,c))}});export{d as default};
