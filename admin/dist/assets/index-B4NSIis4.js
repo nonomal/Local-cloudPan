@@ -1,0 +1,1 @@
+import{_ as c,c as t,o as a,p as _,a as n,b as o}from"./index-B5pPcsYu.js";const d={},s=e=>(_("data-v-4699fc03"),e=e(),n(),e),r=s(()=>o("h2",null,"公告",-1)),l=s(()=>o("h2",null,"指定消息",-1)),p=s(()=>o("h2",null,"Dashboards",-1)),h=[r,l,p];function i(e,f){return a(),t("div",null,h)}const m=c(d,[["render",i],["__scopeId","data-v-4699fc03"]]);export{m as default};
