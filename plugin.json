@@ -1,6 +1,6 @@
 {
   "name": "局域网磁盘托管",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "一个简单的局域网磁盘托管工具",
   "author": "dachao",
   "main": "index.html",

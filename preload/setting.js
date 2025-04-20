@@ -7,6 +7,7 @@ const defaultConfig = {
   maxConnections: 10,
   allowAnonymous: true, // 默认允许匿名访问
   accessPassword: '', // 访问密码
+  logLevel: 'info',
 };
 
 /**

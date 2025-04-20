@@ -3,12 +3,11 @@ const { getLocalIPs, getPreferredIP, getNetworkInterfaces } = require('./preload
 const { startServer, stopServer } = require('./preload/server');
 const { getLatestLogs, clearLogs } = require('./preload/logger');
 
-// 保存 Node.js 原始的 setImmediate
 const _setImmediate = setImmediate;
-// 在 process.loaded 事件中恢复 setImmediate
 process.once('loaded', function () {
   global.setImmediate = _setImmediate;
 });
+
 // 导出API给前端使用
 window.customApis = {
   // 配置相关
