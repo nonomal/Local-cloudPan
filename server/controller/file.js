@@ -116,6 +116,36 @@ router.post('/merge', async (ctx) => {
     ctx.status = 500;
   }
 });
+// 取消上传并清理分片
+router.post('/cancelUpload', async (ctx) => {
+  try {
+    const { fileId } = ctx.request.body;
+    if (!fileId) {
+      ctx.status = 400;
+      ctx.body = { code: 400, msg: '缺少文件ID' };
+      return;
+    }
+
+    // 删除分片目录
+    const chunkPath = path.join(chunkDir, fileId);
+    if (await fs.pathExists(chunkPath)) {
+      await fs.remove(chunkPath);
+    }
+
+    // 删除文件信息
+    const fileInfoPath = path.join(fileInfoDir, fileId);
+    if (await fs.pathExists(fileInfoPath)) {
+      await fs.remove(fileInfoPath);
+    }
+
+    ctx.status = 200;
+    ctx.body = { code: 200, msg: '取消上传成功' };
+  } catch (error) {
+    console.error('取消上传失败:', error);
+    ctx.status = 500;
+    ctx.body = { code: 500, msg: '取消上传失败' };
+  }
+});
 
 // 文件下载
 router.get('/checkFileList', async (ctx) => {

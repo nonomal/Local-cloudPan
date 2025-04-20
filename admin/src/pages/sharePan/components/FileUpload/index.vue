@@ -89,7 +89,7 @@
   import { Sort, Loading } from '@element-plus/icons-vue';
   import { useRoute } from 'vue-router';
   import { formatFileSize } from '@/utils/filestatus';
-  import { verify, uploadChunk, mergeChunks } from '@/api/file/fileList';
+  import { verify, uploadChunk, mergeChunks, cancelUpload } from '@/api/file/fileList';
   import type { UploadFileItem, workerResult } from './types';
   import { cutFile } from './cutFile';
 
@@ -244,13 +244,21 @@
     row.status = 3;
     fileUploadQueues[idx].status = 'paused';
   };
-  const cancel = (fileId) => {
-    const idx = fileUploadQueues.findIndex((item) => item.fileId === fileId);
-    if (idx != -1) fileUploadQueues.splice(idx, 1);
-    const fileInfoIdx = uploadFileList.value.findIndex((file) => file.fileId === fileId);
-    if (fileInfoIdx != -1) uploadFileList.value.splice(fileInfoIdx, 1);
-    clearFileInfo(fileId);
-    processUploadQueue();
+  const cancel = async (fileId) => {
+    try {
+      // 调用后端接口清理分片文件
+      await cancelUpload(fileId);
+
+      // 清理前端状态
+      const idx = fileUploadQueues.findIndex((item) => item.fileId === fileId);
+      if (idx != -1) fileUploadQueues.splice(idx, 1);
+      const fileInfoIdx = uploadFileList.value.findIndex((file) => file.fileId === fileId);
+      if (fileInfoIdx != -1) uploadFileList.value.splice(fileInfoIdx, 1);
+      clearFileInfo(fileId);
+      processUploadQueue();
+    } catch (error) {
+      console.error('取消上传失败:', error);
+    }
   };
 </script>
 

@@ -11,6 +11,7 @@ enum API {
   VERIFY = '/verify',
   UPLOAD = '/upload',
   MERGE = '/merge',
+  CANCEL_UPLOAD = '/cancelUpload',
 }
 
 /** 获取文件列表 */
@@ -97,4 +98,8 @@ export const mergeChunks = async (fileId, path) => {
     console.log(msg);
     return needs;
   }
+};
+
+export const cancelUpload = (fileId: string) => {
+  return request.post<any, ResponseData>(API.CANCEL_UPLOAD, { fileId });
 };
