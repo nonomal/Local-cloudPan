@@ -1,0 +1,22 @@
+// import dark theme
+@use 'element-plus/theme-chalk/src/dark/css-vars.scss' as *;
+
+// 自定义变量
+:root {
+  --ep-file-hover: #e9ecf0;
+  --ep-contextmenu-bc: #fff;
+  --ep-contextmenu-text-color: #03081a;
+}
+html.dark {
+  --ep-file-hover: #222222;
+  --ep-contextmenu-bc: #2b2b2c;
+  --ep-contextmenu-text-color: #e5eaf3;
+}
+
+body {
+  font-family: Inter, system-ui, Avenir, 'Helvetica Neue', Helvetica, 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+}

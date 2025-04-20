@@ -1,0 +1,11 @@
+// 修改dark模式下的默认变量
+
+$--colors: (
+  'primary': (
+    'base': #2563eb,
+  ),
+);
+
+@forward 'element-plus/theme-chalk/src/dark/var.scss' with (
+  $colors: $--colors
+);
