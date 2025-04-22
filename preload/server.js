@@ -8,7 +8,7 @@ const compress = require('koa-compress');
 const { getConfig } = require('./setting');
 const { router: authRouter } = require('./auth');
 const fileRouter = require('./file');
-const { log, createLoggerMiddleware, router: logRouter } = require('./logger');
+const { log, createLoggerMiddleware } = require('./logger');
 
 let server = null;
 // 存储在线用户IP

@@ -177,7 +177,7 @@
           </template>
           <div class="logs-content">
             <div class="log-container">
-              <div class="log-content" ref="logContent">
+              <div class="log-content" ref="logContentRef">
                 <div
                   v-for="(log, index) in logs"
                   :key="index"
@@ -221,6 +221,7 @@
   const logs = ref([]);
   const lastLogId = ref(0);
   const logUpdateTimer = ref(null);
+  const logContentRef = ref(null);
 
   // 获取网络接口列表
   const getNetworkInterfaces = async () => {
@@ -309,9 +310,8 @@
         }
         // 滚动到底部
         nextTick(() => {
-          const logContent = logContent.value;
-          if (logContent) {
-            logContent.scrollTop = logContent.scrollHeight;
+          if (logContentRef.value) {
+            logContentRef.value.scrollTop = logContentRef.value.scrollHeight;
           }
         });
       }
