@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "sharp": "^0.32.1"
+  },
+  "utools": {
+    "nativeDependencies": ["sharp"]  // 关键：声明原生依赖
+  },
+ "build": {
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/sharp/**/*",
+      "**/node_modules/@img/**/*"
+    ]
+  }
+}

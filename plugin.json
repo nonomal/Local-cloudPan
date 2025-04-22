@@ -1,0 +1,20 @@
+{
+  "name": "局域网磁盘托管",
+  "version": "1.0.0",
+  "description": "一个简单的局域网磁盘托管工具",
+  "author": "dachao",
+  "main": "index.html",
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "features": [
+    {
+      "code": "disk-share",
+      "explain": "局域网磁盘托管服务",
+      "cmds": ["share", "磁盘共享", "文件共享", "局域网共享"]
+    }
+  ],
+  "pluginSetting": {
+    "height": 600,
+    "single": true
+  }
+}
