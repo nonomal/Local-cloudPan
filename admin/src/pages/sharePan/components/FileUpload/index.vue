@@ -27,7 +27,7 @@
     <el-card v-show="showPanel" class="file-panel">
       <span class="select-text">正在上传（{{ resolvedCount }}/{{ uploadFileList.length }}）</span>
       <el-table :data="uploadFileList" max-height="25rem">
-        <el-table-column prop="name" width="150" show-overflow-tooltip label="文件名">
+        <el-table-column prop="name" min-width="80" show-overflow-tooltip label="文件名">
           <template #default="{ row }">
             <el-icon style="vertical-align: -10%">
               <i-mynaui:file />
@@ -35,7 +35,7 @@
             {{ row.name }}
           </template>
         </el-table-column>
-        <el-table-column label="当前状态" width="200">
+        <el-table-column label="当前状态" min-width="100">
           <template #default="{ row }">
             <template v-if="[0, 1].includes(row.status)">
               <el-icon class="is-loading">
@@ -58,8 +58,8 @@
             </template>
           </template>
         </el-table-column>
-        <el-table-column width="120" prop="size" label="大小" />
-        <el-table-column width="200" label="操作">
+        <el-table-column min-width="60" prop="size" label="大小" />
+        <el-table-column min-width="100" label="操作">
           <template #default="{ row }">
             <el-button
               v-if="[2, 3].includes(row.status)"
@@ -274,7 +274,11 @@
       top: 2.3rem;
       z-index: 999;
       text-align: left;
-      // max-height: ;
+      width: 70vw;
+      @media screen and (max-width: 500px) {
+        width: 90vw;
+        transform: translateX(40%);
+      }
       .select-text {
         font-size: 1rem;
         font-weight: 600;

@@ -105,7 +105,7 @@
 
 <style scoped lang="scss">
   .play-card {
-    width: 60rem;
+    width: 90vw;
     border-radius: 10px;
     text-align: initial;
     position: fixed;

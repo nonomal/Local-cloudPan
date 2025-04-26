@@ -1,5 +1,5 @@
 <template>
-  <div class="main-container">
+  <div>
     <!-- 主视图 -->
     <ContextMenu :menu="mainMenu" @select="handleSelect">
       <div class="pan-wrapper">
@@ -33,7 +33,7 @@
               <el-empty description="暂无数据" />
             </template>
             <el-table-column fixed type="selection" width="55" reserve-selection />
-            <el-table-column prop="name" label="文件名" min-width="100">
+            <el-table-column prop="name" label="文件名" min-width="90">
               <template #default="{ row }">
                 <!-- 图标 -->
                 <template v-if="row.fileType === 'picture'">
@@ -76,7 +76,7 @@
                 <span v-else class="filename" @click.stop="handleClick(row)">{{ row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="size" label="大小" min-width="30"></el-table-column>
+            <el-table-column prop="size" label="大小" min-width="40"></el-table-column>
             <el-table-column prop="modified" label="修改时间" min-width="70"></el-table-column>
           </el-table>
         </ContextMenu>
@@ -88,10 +88,7 @@
           :menu="fileMenu"
           showarea=".grid-view .file-item"
           @select="handleSelect">
-          <el-scrollbar
-            ref="gridScrollContainerRef"
-            max-height="calc(100vh - 12rem)"
-            :wrap-style="{ padding: '0 25px' }">
+          <el-scrollbar ref="gridScrollContainerRef" max-height="calc(100vh - 12rem)">
             <div class="grid-view" :class="{ empty: allDate.length === 0 }" ref="gridViewWrapper">
               <GridView
                 ref="gridRef"
@@ -498,56 +495,55 @@
 </script>
 
 <style scoped lang="scss">
-  .main-container {
-    width: 100%;
-    padding: 2rem;
-    position: relative;
-    overflow: hidden;
-    .pan-wrapper {
-      border-radius: 10px;
-      max-width: 100%;
-      min-width: 43rem;
-      max-height: calc(100vh - 4rem);
-      .pan-title {
-        font-size: 1.5rem;
-        line-height: 2rem;
-        font-weight: 700;
-        text-align: left;
-        margin-bottom: 1.5rem;
+  .pan-wrapper {
+    border-radius: 10px;
+    max-width: 100%;
+    max-height: calc(100vh - 4rem);
+    .pan-title {
+      font-size: 1.5rem;
+      line-height: 2rem;
+      font-weight: 700;
+      text-align: left;
+      margin-bottom: 1.5rem;
+    }
+    .tabbar-container {
+      margin-bottom: 1rem;
+    }
+    .filename {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      &:hover {
+        color: var(--ep-menu-active-color);
       }
-      .tabbar-container {
-        margin-bottom: 1rem;
+    }
+    .list-view {
+      .file-pic {
+        width: 1.5rem;
+        height: 1.5rem;
+        vertical-align: bottom;
+        margin-right: 0.3rem;
       }
-      .filename {
-        transition: all 0.3s ease;
-        cursor: pointer;
-        &:hover {
-          color: var(--ep-menu-active-color);
-        }
+      .rename-ipt {
+        width: 40%;
+        margin-right: 0.75rem;
+        line-height: 1.4rem;
+        height: 1.4rem;
+        border-radius: 4px;
+        border: 1px solid #a7adbc;
+        padding: 0 0.6rem;
+        outline: none;
+        font-size: 0.8125rem;
       }
-      .list-view {
-        .file-pic {
-          width: 1.5rem;
-          height: 1.5rem;
-          vertical-align: bottom;
-          margin-right: 0.3rem;
-        }
-        .rename-ipt {
-          width: 40%;
-          margin-right: 0.75rem;
-          line-height: 1.4rem;
-          height: 1.4rem;
-          border-radius: 4px;
-          border: 1px solid #a7adbc;
-          padding: 0 0.6rem;
-          outline: none;
-          font-size: 0.8125rem;
-        }
-        .rename-btn {
-          width: 1.25rem;
-          height: 1.25rem;
-          padding: 2px;
-        }
+      .rename-btn {
+        width: 1.25rem;
+        height: 1.25rem;
+        padding: 2px;
+      }
+    }
+    .grid-wrapper {
+      padding: 0 25px;
+      @media screen and (max-width: 500px) {
+        padding: 0;
       }
       .grid-view {
         display: grid;
@@ -560,16 +556,17 @@
           justify-content: center;
         }
       }
-      .pan-card-footer {
-        font-size: 1rem;
-        line-height: 1rem;
-        text-align: left;
-        margin-top: 0.8rem;
-      }
     }
-    .download-container {
-      position: absolute;
-      left: -9999px;
+
+    .pan-card-footer {
+      font-size: 1rem;
+      line-height: 1rem;
+      text-align: left;
+      margin-top: 0.8rem;
     }
+  }
+  .download-container {
+    position: absolute;
+    left: -9999px;
   }
 </style>
