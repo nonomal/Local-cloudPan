@@ -53,7 +53,7 @@ npm start
 
 为了确保运行正确，请先运行后端服务。再运行前端，之后访问 http://localhost:8888
 
-## UI演示
+## UI 演示
 
 主界面
 
@@ -74,4 +74,8 @@ npm start
 传输列表
 
 ![image-20241020183146792](./docs/image-20241020183146792.png)
+
+## 下载
+
+通过本页面[releases](https://github.com/dcbestwords/Local-cloudPan/releases)选项卡下载
 
