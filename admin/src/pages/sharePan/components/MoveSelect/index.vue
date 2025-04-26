@@ -129,19 +129,22 @@
 
 <style scoped lang="scss">
   .move-card {
-    width: 720px;
+    width: 70vw;
     border-radius: 10px;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 100;
+    @media screen and (max-width: 500px) {
+      width: 90vw;
+    }
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       .card-header-text {
-        font-size: 15px;
+        font-size: 1rem;
         font-weight: bold;
       }
       .close-btn {
@@ -156,21 +159,24 @@
       padding: 0 0 10px;
     }
     .breadcrumb-wrapper {
-      padding: 15px 20px;
+      padding: 0.9rem 1.25rem;
       background-color: var(--ep-file-hover);
     }
     .table-wrapper {
-      height: 340px;
+      height: 50vh;
       overflow-y: auto;
+      @media screen and (max-width: 500px) {
+        height: 40vw;
+      }
       .dic-table {
         width: 100%;
         table-layout: fixed;
         text-align: left;
         border-collapse: collapse;
         .dic-table-row {
-          height: 50px;
+          height: 3rem;
           line-height: 1;
-          font-size: 15px;
+          font-size: 0.9rem;
           border-bottom: 1px solid var(--ep-border-color-lighter);
           cursor: pointer;
           &:hover {
@@ -178,10 +184,10 @@
           }
           td {
             vertical-align: middle;
-            padding-left: 20px;
+            padding-left: 1.25rem;
             .file-pic {
               vertical-align: middle;
-              margin-right: 5px;
+              margin-right: 0.3rem;
             }
             .filename {
               transition: all 0.3s ease;
@@ -195,7 +201,7 @@
       }
     }
     .card-footer {
-      padding: 10px 20px;
+      padding: 0.625rem 1.25rem;
       display: flex;
       justify-content: flex-end;
     }

@@ -43,11 +43,32 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 12px;
+
+    @media screen and (max-width: 500px) {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 0;
+      gap: 1.5rem;
+    }
+
+    .left-breadcrumb {
+      @media screen and (max-width: 500px) {
+        order: 2;
+      }
+    }
+
     .rig-switchMode {
       display: flex;
       gap: 1rem;
       align-items: center;
       justify-content: space-between;
+
+      @media screen and (max-width: 500px) {
+        order: 1;
+        width: 100%;
+        justify-content: flex-start;
+      }
+
       :deep(path) {
         stroke-width: 2;
       }

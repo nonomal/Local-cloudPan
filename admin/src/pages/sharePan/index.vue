@@ -33,7 +33,7 @@
               <el-empty description="暂无数据" />
             </template>
             <el-table-column fixed type="selection" width="55" reserve-selection />
-            <el-table-column prop="name" label="文件名" min-width="100">
+            <el-table-column prop="name" label="文件名" min-width="90">
               <template #default="{ row }">
                 <!-- 图标 -->
                 <template v-if="row.fileType === 'picture'">
@@ -76,7 +76,7 @@
                 <span v-else class="filename" @click.stop="handleClick(row)">{{ row.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="size" label="大小" min-width="30"></el-table-column>
+            <el-table-column prop="size" label="大小" min-width="40"></el-table-column>
             <el-table-column prop="modified" label="修改时间" min-width="70"></el-table-column>
           </el-table>
         </ContextMenu>
@@ -88,10 +88,7 @@
           :menu="fileMenu"
           showarea=".grid-view .file-item"
           @select="handleSelect">
-          <el-scrollbar
-            ref="gridScrollContainerRef"
-            max-height="calc(100vh - 12rem)"
-            :wrap-style="{ padding: '0 25px' }">
+          <el-scrollbar ref="gridScrollContainerRef" max-height="calc(100vh - 12rem)">
             <div class="grid-view" :class="{ empty: allDate.length === 0 }" ref="gridViewWrapper">
               <GridView
                 ref="gridRef"
@@ -501,7 +498,6 @@
   .pan-wrapper {
     border-radius: 10px;
     max-width: 100%;
-    min-width: 43rem;
     max-height: calc(100vh - 4rem);
     .pan-title {
       font-size: 1.5rem;
@@ -544,17 +540,24 @@
         padding: 2px;
       }
     }
-    .grid-view {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 10rem);
-      height: fit-content;
-      justify-content: space-around;
-      align-content: start;
-      &.empty {
-        grid-template-columns: 1fr;
-        justify-content: center;
+    .grid-wrapper {
+      padding: 0 25px;
+      @media screen and (max-width: 500px) {
+        padding: 0;
+      }
+      .grid-view {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 10rem);
+        height: fit-content;
+        justify-content: space-around;
+        align-content: start;
+        &.empty {
+          grid-template-columns: 1fr;
+          justify-content: center;
+        }
       }
     }
+
     .pan-card-footer {
       font-size: 1rem;
       line-height: 1rem;
@@ -562,12 +565,6 @@
       margin-top: 0.8rem;
     }
   }
-  // :deep(.ep-table__body tr:hover > td.ep-table__cell) {
-  //   transform: scale(1.01);
-  // }
-  // :deep(.ep-table__body tr > td.ep-table__cell) {
-  //   transition: all 0.3s ease;
-  // }
   .download-container {
     position: absolute;
     left: -9999px;
